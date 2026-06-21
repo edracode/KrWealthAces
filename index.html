@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OmniWealth Pro - Pusat Simulasi Finansial</title>
     
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
+        window.tailwind = window.tailwind || {};
         tailwind.config = {
             darkMode: 'class',
             theme: {
@@ -19,12 +21,13 @@
         }
     </script>
 
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Menggunakan CDN yang lebih stabil (cdnjs) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.3/babel.min.js"></script>
     
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js UMD Version (Mencegah error 'Chart is not defined') -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js"></script>
     
     <style>
         /* Custom Scrollbar */
@@ -55,14 +58,14 @@
 <body class="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 min-h-screen">
     <div id="root"></div>
 
-    <script type="text/babel">
+    <!-- Menambahkan data-presets agar Babel selalu membaca mode React standar -->
+    <script type="text/babel" data-presets="react">
         const { useState, useEffect, useMemo, useCallback, useRef } = React;
 
         // ==========================================
         // 1. UTILS & MATHEMATICAL CORE FUNCTIONS
         // ==========================================
 
-        // Format Uang
         const formatCurrency = (value, currency = 'IDR') => {
             if (isNaN(value) || value === null) return '0';
             return new Intl.NumberFormat('id-ID', {
@@ -73,13 +76,11 @@
             }).format(value);
         };
 
-        // Format Angka Biasa
         const formatNumber = (value) => {
             if (isNaN(value) || value === null) return '0';
             return new Intl.NumberFormat('id-ID').format(value);
         };
 
-        // Mengurai string input dengan koma/titik ke float
         const parseNumber = (val) => {
             if (typeof val === 'number') return val;
             if (!val) return 0;
@@ -88,14 +89,6 @@
             return isNaN(parsed) ? 0 : parsed;
         };
 
-        /**
-         * Kalkulasi Future Value (FV) - Hasil Akhir
-         * P = Principal (Modal Awal)
-         * PMT = Payment (Setoran)
-         * r = Rate per periode (Desimal)
-         * n = Jumlah periode
-         * type = 0 (Akhir periode), 1 (Awal periode)
-         */
         const calcFV = (P, PMT, r, n, type = 0) => {
             if (r === 0) return P + (PMT * n);
             const compoundFactor = Math.pow(1 + r, n);
@@ -104,9 +97,6 @@
             return (P * compoundFactor) + (PMT * pmtFactor * typeFactor);
         };
 
-        /**
-         * Kalkulasi Payment (PMT) - Setoran Berkala yang dibutuhkan
-         */
         const calcPMT = (FV, P, r, n, type = 0) => {
             if (r === 0) return (FV - P) / (n === 0 ? 1 : n);
             const compoundFactor = Math.pow(1 + r, n);
@@ -115,21 +105,15 @@
             return (FV - (P * compoundFactor)) / (pmtFactor * typeFactor);
         };
 
-        /**
-         * Kalkulasi NPER - Durasi yang dibutuhkan
-         */
         const calcNPER = (FV, P, PMT, r, type = 0) => {
             if (r === 0) return PMT === 0 ? 0 : (FV - P) / PMT;
             const typeFactor = type === 1 ? (1 + r) : 1;
             const num = (FV * r + PMT * typeFactor);
             const den = (P * r + PMT * typeFactor);
-            if (den <= 0) return 0; // Infinite/Impossible
+            if (den <= 0) return 0; 
             return Math.log(num / den) / Math.log(1 + r);
         };
 
-        /**
-         * Kalkulasi RATE - Newton-Raphson Method untuk mencari bunga
-         */
         const calcRATE = (nper, pmt, pv, fv, type = 0, guess = 0.1) => {
             if (nper <= 0) return 0;
             let rate = guess;
@@ -158,17 +142,8 @@
                 if (Math.abs(newRate - rate) < epsMax) return newRate;
                 rate = newRate;
             }
-            return rate; // Jika tidak konvergen, kembalikan rate terakhir
+            return rate; 
         };
-
-        // Random Normal Distribution untuk Monte Carlo (Box-Muller)
-        const randomNormal = (mean = 0, stdev = 1) => {
-            let u = 1 - Math.random(); // (0, 1]
-            let v = Math.random();
-            let z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
-            return z * stdev + mean;
-        };
-
 
         // ==========================================
         // 2. UI COMPONENTS (ICONS & WIDGETS)
@@ -182,10 +157,7 @@
             Activity: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>,
             Moon: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>,
             Sun: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>,
-            DollarSign: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>,
-            Download: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>,
-            Printer: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>,
-            Save: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+            Printer: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
         };
 
         const Card = ({ children, className = "" }) => (
@@ -212,12 +184,11 @@
         };
 
         const InputGroup = ({ label, value, onChange, type = "text", prefix, suffix, disabled = false, min, step }) => {
-            // Internal state untuk menangani string raw (dengan koma) sebelum parse
-            const [raw, setRaw] = useState(value === 0 ? "0" : value.toString());
+            const [raw, setRaw] = useState(value === 0 ? "0" : (value ? value.toString() : "0"));
 
             useEffect(() => {
                 if(!disabled) {
-                   setRaw(value.toString()); 
+                   setRaw(value !== null && value !== undefined ? value.toString() : "0"); 
                 }
             }, [value, disabled]);
 
@@ -266,7 +237,6 @@
             );
         };
 
-        // Custom InputField to wrap the InputGroup with specific styling
         const InputField = (props) => <InputGroup {...props} />;
 
         const SelectGroup = ({ label, value, onChange, options }) => (
@@ -283,31 +253,28 @@
         );
 
         // ==========================================
-        // 3. MAIN CALCULATOR MODULE (OMNI-DIRECTIONAL)
+        // 3. MAIN CALCULATOR MODULE
         // ==========================================
 
         const OmniCalculator = ({ currency }) => {
-            // States - ALL INITIALIZED TO ZERO OR EQUIVALENT
-            const [solveFor, setSolveFor] = useState('FV'); // Mode: FV, PMT, RATE, NPER
+            const [solveFor, setSolveFor] = useState('FV');
             const [principal, setPrincipal] = useState(0);
             const [contribution, setContribution] = useState(0);
-            const [rate, setRate] = useState(0); // Annual Rate %
+            const [rate, setRate] = useState(0);
             const [years, setYears] = useState(0);
             const [targetFV, setTargetFV] = useState(0);
             const [inflation, setInflation] = useState(0);
             
-            const [freqContribute, setFreqContribute] = useState(12); // Monthly default
-            const [freqCompound, setFreqCompound] = useState(12); // Monthly default
-            const [timing, setTiming] = useState(0); // 0 = End, 1 = Beginning
+            const [freqContribute, setFreqContribute] = useState(12);
+            const [freqCompound, setFreqCompound] = useState(12);
+            const [timing, setTiming] = useState(0);
 
             const [results, setResults] = useState(null);
             const [schedule, setSchedule] = useState([]);
             
-            // Ref for Chart instance
             const chartRef = useRef(null);
             const pieChartRef = useRef(null);
 
-            // Perhitungan Inti
             const calculateAll = useCallback(() => {
                 let P = parseFloat(principal) || 0;
                 let C = parseFloat(contribution) || 0;
@@ -316,12 +283,6 @@
                 let T = parseFloat(targetFV) || 0;
                 let Inf = parseFloat(inflation) || 0;
 
-                // Konversi Rate tahunan ke periodik
-                let effectiveRatePerCompound = R / 100 / freqCompound;
-                
-                // Rasio frekuensi (misal kontribusi bulanan tapi compound tahunan)
-                // Pendekatan standar: sesuaikan kontribusi ke frekuensi compound atau sebaliknya.
-                // Untuk presisi tinggi, kita samakan periode ke frekuensi kontribusi, dan hitung effective rate per contribution.
                 let periods = Y * freqContribute;
                 let ratePerContribute = Math.pow(1 + (R/100/freqCompound), freqCompound/freqContribute) - 1;
 
@@ -344,7 +305,6 @@
                             break;
                         case 'RATE':
                             calculatedRate = calcRATE(periods, C, P, T, timing);
-                            // Convert back to annual nominal rate
                             R = (Math.pow(1 + calculatedRate, freqContribute/freqCompound) - 1) * freqCompound * 100;
                             calculatedFV = T;
                             break;
@@ -360,42 +320,30 @@
                     return;
                 }
 
-                // Generasi Jadwal Amortisasi / Pertumbuhan
                 let currentBalance = P;
                 let totalInvested = P;
                 let sched = [];
                 let yearlyData = {};
 
-                // Safeguard against infinite loops if periods is too high due to invalid inputs
-                let loopPeriods = Math.min(periods, 12000); // Max 1000 years monthly
+                let loopPeriods = Math.min(periods, 12000); 
                 if (loopPeriods < 0 || isNaN(loopPeriods)) loopPeriods = 0;
 
                 for (let i = 1; i <= Math.ceil(loopPeriods); i++) {
                     let interest = currentBalance * ratePerContribute;
                     let cont = (i <= periods) ? C : 0;
                     
-                    if (timing === 1) { // Beginning of period
+                    if (timing === 1) { 
                         interest = (currentBalance + cont) * ratePerContribute;
                         currentBalance += cont + interest;
-                    } else { // End of period
+                    } else { 
                         currentBalance += interest + cont;
                     }
                     
                     totalInvested += cont;
-
                     let year = Math.ceil(i / freqContribute);
                     
-                    // Simpan data bulanan
-                    sched.push({
-                        period: i,
-                        year: year,
-                        contribution: cont,
-                        interest: interest,
-                        balance: currentBalance,
-                        totalInvested: totalInvested
-                    });
+                    sched.push({ period: i, year: year, contribution: cont, interest: interest, balance: currentBalance, totalInvested: totalInvested });
 
-                    // Akumulasi data tahunan untuk grafik
                     if (!yearlyData[year]) {
                         yearlyData[year] = { year, balance: 0, invested: 0 };
                     }
@@ -403,7 +351,6 @@
                     yearlyData[year].invested = totalInvested;
                 }
 
-                // Kalkulasi Inflasi
                 let realValue = calculatedFV / Math.pow(1 + (Inf/100), Y);
                 let totalInterest = calculatedFV - totalInvested;
                 let roi = totalInvested > 0 ? (totalInterest / totalInvested) * 100 : 0;
@@ -427,12 +374,15 @@
                 calculateAll();
             }, [calculateAll]);
 
-            // Chart Render Effect
             useEffect(() => {
-                if (!results || !results.yearlyData.length) return;
+                if (!results) return;
+                if (!results.yearlyData || results.yearlyData.length === 0) return;
+                if (typeof window.Chart === 'undefined') return; // Pengaman agar tidak crash jika ChartJS gagal dimuat
 
                 const ctxLine = document.getElementById('growthChart');
                 const ctxPie = document.getElementById('compositionChart');
+
+                if (!ctxLine || !ctxPie) return; // Pengaman DOM
 
                 if (chartRef.current) chartRef.current.destroy();
                 if (pieChartRef.current) pieChartRef.current.destroy();
@@ -441,7 +391,6 @@
                 const textColor = isDark ? '#e2e8f0' : '#475569';
                 const gridColor = isDark ? '#334155' : '#e2e8f0';
 
-                // Line/Area Chart
                 chartRef.current = new Chart(ctxLine, {
                     type: 'line',
                     data: {
@@ -487,7 +436,6 @@
                     }
                 });
 
-                // Pie Chart
                 pieChartRef.current = new Chart(ctxPie, {
                     type: 'doughnut',
                     data: {
@@ -519,20 +467,16 @@
 
             }, [results, currency]);
 
-
             return (
                 <div className="space-y-6">
-                    {/* Control Panel */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        
-                        {/* Input Area */}
                         <Card className="lg:col-span-1">
                             <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
                                 <Icons.Calculator /> Parameter Simulasi
                             </h2>
                             
                             <SelectGroup 
-                                label="Target Pencarian (Apa yang ingin dihitung?)"
+                                label="Target Pencarian"
                                 value={solveFor}
                                 onChange={setSolveFor}
                                 options={[
@@ -544,48 +488,11 @@
                             />
 
                             <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                                <InputField 
-                                    label="Modal Awal" 
-                                    value={principal} 
-                                    onChange={setPrincipal} 
-                                    prefix={currency} 
-                                />
-
-                                {solveFor !== 'FV' && (
-                                    <InputField 
-                                        label="Target Hasil Akhir (Future Value)" 
-                                        value={targetFV} 
-                                        onChange={setTargetFV} 
-                                        prefix={currency} 
-                                    />
-                                )}
-
-                                {solveFor !== 'PMT' && (
-                                    <InputField 
-                                        label="Setoran Berkala" 
-                                        value={contribution} 
-                                        onChange={setContribution} 
-                                        prefix={currency} 
-                                    />
-                                )}
-
-                                {solveFor !== 'RATE' && (
-                                    <InputField 
-                                        label="Tingkat Pertumbuhan (Return per Tahun)" 
-                                        value={rate} 
-                                        onChange={setRate} 
-                                        suffix="%" 
-                                    />
-                                )}
-
-                                {solveFor !== 'NPER' && (
-                                    <InputField 
-                                        label="Durasi Investasi" 
-                                        value={years} 
-                                        onChange={setYears} 
-                                        suffix="Tahun" 
-                                    />
-                                )}
+                                <InputField label="Modal Awal" value={principal} onChange={setPrincipal} prefix={currency} />
+                                {solveFor !== 'FV' && <InputField label="Target Hasil Akhir (Future Value)" value={targetFV} onChange={setTargetFV} prefix={currency} />}
+                                {solveFor !== 'PMT' && <InputField label="Setoran Berkala" value={contribution} onChange={setContribution} prefix={currency} />}
+                                {solveFor !== 'RATE' && <InputField label="Tingkat Pertumbuhan (Return per Tahun)" value={rate} onChange={setRate} suffix="%" />}
+                                {solveFor !== 'NPER' && <InputField label="Durasi Investasi" value={years} onChange={setYears} suffix="Tahun" />}
 
                                 <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
                                     <p className="text-xs font-semibold text-gray-500 uppercase mb-3">Pengaturan Lanjutan</p>
@@ -604,7 +511,7 @@
                                             ]}
                                         />
                                         <SelectGroup 
-                                            label="Frekuensi Bunga (Compound)"
+                                            label="Frekuensi Compound"
                                             value={freqCompound}
                                             onChange={setFreqCompound}
                                             options={[
@@ -624,69 +531,52 @@
                                             {value: 1, label: 'Awal Periode'}
                                         ]}
                                     />
-                                    <InputField 
-                                        label="Estimasi Inflasi Tahunan" 
-                                        value={inflation} 
-                                        onChange={setInflation} 
-                                        suffix="%" 
-                                    />
+                                    <InputField label="Estimasi Inflasi Tahunan" value={inflation} onChange={setInflation} suffix="%" />
                                 </div>
                             </div>
                         </Card>
 
-                        {/* Dashboard Results & Charts */}
                         <div className="lg:col-span-2 space-y-6">
-                            {/* Summary Cards */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                 <StatBox 
                                     title={solveFor === 'FV' ? "Estimasi Hasil Akhir" : "Target Hasil Akhir"} 
-                                    value={formatCurrency(results?.futureValue, currency)} 
-                                    highlight={solveFor === 'FV'}
-                                    color="blue"
+                                    value={formatCurrency(results ? results.futureValue : 0, currency)} 
+                                    highlight={solveFor === 'FV'} color="blue"
                                 />
                                 <StatBox 
                                     title={solveFor === 'PMT' ? "Setoran Diperlukan" : "Total Setoran"} 
-                                    value={solveFor === 'PMT' ? formatCurrency(results?.calculatedPMT, currency) + " /per" : formatCurrency(results?.totalInvested, currency)} 
-                                    highlight={solveFor === 'PMT'}
-                                    color="green"
+                                    value={solveFor === 'PMT' ? formatCurrency(results ? results.calculatedPMT : 0, currency) + " /per" : formatCurrency(results ? results.totalInvested : 0, currency)} 
+                                    highlight={solveFor === 'PMT'} color="green"
                                 />
                                 <StatBox 
                                     title={solveFor === 'RATE' ? "Return Diperlukan" : "Total Keuntungan"} 
-                                    value={solveFor === 'RATE' ? (results?.calculatedRate || 0).toFixed(2) + "% /thn" : formatCurrency(results?.totalInterest, currency)} 
-                                    highlight={solveFor === 'RATE'}
-                                    color="purple"
+                                    value={solveFor === 'RATE' ? (results ? results.calculatedRate : 0).toFixed(2) + "% /thn" : formatCurrency(results ? results.totalInterest : 0, currency)} 
+                                    highlight={solveFor === 'RATE'} color="purple"
                                 />
                                 <StatBox 
                                     title={solveFor === 'NPER' ? "Waktu Dibutuhkan" : "Nilai Riil (Setelah Inflasi)"} 
-                                    value={solveFor === 'NPER' ? (results?.calculatedYears || 0).toFixed(1) + " Tahun" : formatCurrency(results?.realValue, currency)} 
-                                    highlight={solveFor === 'NPER'}
-                                    color="orange"
+                                    value={solveFor === 'NPER' ? (results ? results.calculatedYears : 0).toFixed(1) + " Tahun" : formatCurrency(results ? results.realValue : 0, currency)} 
+                                    highlight={solveFor === 'NPER'} color="orange"
                                 />
                             </div>
 
-                            {/* Charts Area */}
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                                 <Card className="lg:col-span-2 min-h-[300px] flex flex-col">
                                     <h3 className="text-sm font-semibold mb-2">Proyeksi Pertumbuhan Aset</h3>
-                                    <div className="flex-1 relative h-64">
-                                        <canvas id="growthChart"></canvas>
-                                    </div>
+                                    <div className="flex-1 relative h-64"><canvas id="growthChart"></canvas></div>
                                 </Card>
                                 <Card className="min-h-[300px] flex flex-col">
                                     <h3 className="text-sm font-semibold mb-2">Komposisi Hasil</h3>
-                                    <div className="flex-1 relative h-64">
-                                        <canvas id="compositionChart"></canvas>
-                                    </div>
+                                    <div className="flex-1 relative h-64"><canvas id="compositionChart"></canvas></div>
                                     <div className="mt-4 text-center">
                                         <p className="text-xs text-gray-500">Rasio Keuntungan (ROI)</p>
-                                        <p className="text-lg font-bold text-green-500">+{(results?.roi || 0).toFixed(2)}%</p>
+                                        <p className="text-lg font-bold text-green-500">+{(results ? results.roi : 0).toFixed(2)}%</p>
                                     </div>
                                 </Card>
                             </div>
                         </div>
                     </div>
 
-                    {/* Amortization Table */}
                     <Card className="overflow-hidden">
                         <h2 className="text-lg font-bold mb-4">Rincian Berkala</h2>
                         <div className="overflow-x-auto max-h-96">
@@ -702,7 +592,7 @@
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
-                                    {schedule.slice(0, 100).map((row, idx) => ( // Batasi 100 render awal untuk performa, bisa ditambahkan pagination
+                                    {schedule.slice(0, 100).map((row, idx) => (
                                         <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{row.period}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{row.year}</td>
@@ -716,7 +606,7 @@
                             </table>
                             {schedule.length > 100 && (
                                 <div className="p-4 text-center text-sm text-gray-500">
-                                    Menampilkan 100 periode pertama dari total {schedule.length} periode. Ekspor data untuk melihat seluruh rincian.
+                                    Menampilkan 100 periode pertama dari total {schedule.length} periode.
                                 </div>
                             )}
                         </div>
@@ -725,9 +615,8 @@
             );
         };
 
-
         // ==========================================
-        // 4. FIRE (Financial Independence Retire Early) CALCULATOR
+        // 4. FIRE CALCULATOR
         // ==========================================
         const FIRECalculator = ({ currency }) => {
             const [currentAge, setCurrentAge] = useState(0);
@@ -735,24 +624,20 @@
             const [monthlyExpense, setMonthlyExpense] = useState(0);
             const [monthlySavings, setMonthlySavings] = useState(0);
             const [annualReturn, setAnnualReturn] = useState(0);
-            const [safeWithdrawalRate, setSafeWithdrawalRate] = useState(4); // Default 4% Rule
+            const [safeWithdrawalRate, setSafeWithdrawalRate] = useState(4);
             const [inflation, setInflation] = useState(0);
 
-            // Perhitungan FIRE
             const targetFIRE = monthlyExpense > 0 ? (monthlyExpense * 12) / (safeWithdrawalRate / 100) : 0;
-            const netReturn = ((1 + annualReturn/100) / (1 + inflation/100)) - 1; // Real return
+            const netReturn = ((1 + annualReturn/100) / (1 + inflation/100)) - 1; 
             
             let yearsToFIRE = 0;
             if (netReturn > 0 && monthlySavings > 0) {
-                // Gunakan logaritma untuk mencari NPER (mirip fungsi calcNPER)
-                const r = netReturn / 12; // monthly real return
+                const r = netReturn / 12; 
                 const P = currentSavings;
                 const PMT = monthlySavings;
                 const FV = targetFIRE;
-                
                 const num = (FV * r + PMT);
                 const den = (P * r + PMT);
-                
                 if (den > 0 && num > 0) {
                     const months = Math.log(num / den) / Math.log(1 + r);
                     yearsToFIRE = months / 12;
@@ -766,15 +651,12 @@
             return (
                 <Card>
                     <div className="flex items-center gap-3 mb-6">
-                        <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg text-orange-600">
-                            <Icons.TrendingUp />
-                        </div>
+                        <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg text-orange-600"><Icons.TrendingUp /></div>
                         <div>
                             <h2 className="text-xl font-bold">Kalkulator FIRE</h2>
                             <p className="text-sm text-gray-500">Kapan Anda bisa berhenti bekerja?</p>
                         </div>
                     </div>
-
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
@@ -788,13 +670,10 @@
                                 <InputField label="Asumsi Inflasi" value={inflation} onChange={setInflation} suffix="%" />
                             </div>
                             <InputField label="Safe Withdrawal Rate (SWR)" value={safeWithdrawalRate} onChange={setSafeWithdrawalRate} suffix="%" />
-                            <p className="text-xs text-gray-400 mt-2">SWR 4% adalah standar umum aturan Trinity Study. Artinya Anda bisa menarik 4% dari total portofolio di tahun pertama pensiun tanpa kehabisan uang.</p>
                         </div>
-
                         <div className="flex flex-col justify-center items-center p-8 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700">
                             <h3 className="text-lg text-gray-500 font-medium mb-2">Target Dana FIRE</h3>
                             <div className="text-4xl font-black text-orange-500 mb-8">{formatCurrency(targetFIRE, currency)}</div>
-                            
                             <div className="w-full space-y-4">
                                 <div className="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-2">
                                     <span className="text-gray-500">Estimasi Waktu</span>
@@ -805,12 +684,6 @@
                                     <span className="font-bold text-2xl text-blue-500">{fireAge > 0 ? Math.ceil(fireAge) + ' Tahun' : '-'}</span>
                                 </div>
                             </div>
-                            
-                            {yearsToFIRE > 50 && (
-                                <div className="mt-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm w-full text-center">
-                                    Target sulit tercapai. Pertimbangkan menambah investasi bulanan atau menekan pengeluaran.
-                                </div>
-                            )}
                         </div>
                     </div>
                 </Card>
@@ -818,23 +691,21 @@
         }
 
         // ==========================================
-        // 5. PROFESSIONAL METRICS (NPV, IRR)
+        // 5. PRO METRICS (NPV, IRR)
         // ==========================================
         const ProMetrics = ({ currency }) => {
             const [discountRate, setDiscountRate] = useState(0);
             const [initialInvestment, setInitialInvestment] = useState(0);
-            const [cashflows, setCashflows] = useState([0, 0, 0]); // Default 3 years zero
+            const [cashflows, setCashflows] = useState([0, 0, 0]); 
 
             const updateCF = (idx, val) => {
                 const newCF = [...cashflows];
                 newCF[idx] = val;
                 setCashflows(newCF);
             };
-
             const addYear = () => setCashflows([...cashflows, 0]);
             const removeYear = () => { if(cashflows.length > 1) setCashflows(cashflows.slice(0, -1)); }
 
-            // Calculate NPV
             const calculateNPV = () => {
                 let npv = -initialInvestment;
                 const r = discountRate / 100;
@@ -844,11 +715,8 @@
                 return npv;
             };
 
-            // Calculate IRR (Simple Newton-Raphson approximation)
             const calculateIRR = () => {
-                const maxIter = 1000;
-                let rate = 0.1; // guess 10%
-                
+                let rate = 0.1; 
                 const npvForRate = (r) => {
                     let val = -initialInvestment;
                     for (let i = 0; i < cashflows.length; i++) {
@@ -856,12 +724,10 @@
                     }
                     return val;
                 };
-
-                for (let i = 0; i < maxIter; i++) {
+                for (let i = 0; i < 1000; i++) {
                     let npv = npvForRate(rate);
                     let npv_plus = npvForRate(rate + 0.0001);
                     let derivative = (npv_plus - npv) / 0.0001;
-                    
                     if (Math.abs(derivative) < 0.000001) break;
                     let newRate = rate - (npv / derivative);
                     if (Math.abs(newRate - rate) < 0.00001) return newRate * 100;
@@ -876,56 +742,38 @@
             return (
                 <Card>
                     <div className="flex items-center gap-3 mb-6">
-                        <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg text-purple-600">
-                            <Icons.Activity />
-                        </div>
+                        <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg text-purple-600"><Icons.Activity /></div>
                         <div>
                             <h2 className="text-xl font-bold">Analisis Investasi Profesional</h2>
                             <p className="text-sm text-gray-500">Net Present Value (NPV) & Internal Rate of Return (IRR)</p>
                         </div>
                     </div>
-
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         <div className="lg:col-span-1 space-y-4">
                             <InputField label="Modal Awal (Tahun 0)" value={initialInvestment} onChange={setInitialInvestment} prefix={currency} />
-                            <InputField label="Discount Rate (Cost of Capital)" value={discountRate} onChange={setDiscountRate} suffix="%" />
-                            
+                            <InputField label="Discount Rate" value={discountRate} onChange={setDiscountRate} suffix="%" />
                             <div className="mt-6">
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Proyeksi Arus Kas (Cash Flow)</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Proyeksi Arus Kas</label>
                                 {cashflows.map((cf, idx) => (
                                     <div key={idx} className="flex items-center gap-2 mb-2">
                                         <span className="text-sm text-gray-500 w-16">Thn {idx + 1}</span>
-                                        <div className="flex-1">
-                                            <InputField label="" value={cf} onChange={(v) => updateCF(idx, v)} prefix={currency} />
-                                        </div>
+                                        <div className="flex-1"><InputField label="" value={cf} onChange={(v) => updateCF(idx, v)} prefix={currency} /></div>
                                     </div>
                                 ))}
                                 <div className="flex gap-2">
-                                    <button onClick={addYear} className="flex-1 px-3 py-2 bg-gray-100 dark:bg-gray-700 text-sm rounded hover:bg-gray-200 transition">+ Tambah Tahun</button>
-                                    <button onClick={removeYear} className="px-3 py-2 bg-red-50 dark:bg-red-900/30 text-red-600 text-sm rounded hover:bg-red-100 transition">-</button>
+                                    <button onClick={addYear} className="flex-1 px-3 py-2 bg-gray-100 dark:bg-gray-700 text-sm rounded">+ Tambah</button>
+                                    <button onClick={removeYear} className="px-3 py-2 bg-red-50 text-red-600 text-sm rounded">-</button>
                                 </div>
                             </div>
                         </div>
-
                         <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 h-max">
-                            <div className={`p-6 rounded-xl border ${npv > 0 ? 'bg-green-50 border-green-200 dark:bg-green-900/20' : 'bg-red-50 border-red-200 dark:bg-red-900/20'}`}>
+                            <div className={`p-6 rounded-xl border ${npv > 0 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
                                 <h3 className="text-gray-500 text-sm font-medium mb-1">Net Present Value (NPV)</h3>
-                                <div className={`text-3xl font-bold ${npv > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                    {formatCurrency(npv, currency)}
-                                </div>
-                                <p className="text-xs mt-2 text-gray-500">
-                                    {npv > 0 ? "Proyek Layak Diterima (NPV Positif)" : npv === 0 ? "Titik Impas" : "Proyek Ditolak (NPV Negatif)"}
-                                </p>
+                                <div className={`text-3xl font-bold ${npv > 0 ? 'text-green-600' : 'text-red-600'}`}>{formatCurrency(npv, currency)}</div>
                             </div>
-
-                            <div className="p-6 rounded-xl border bg-purple-50 border-purple-200 dark:bg-purple-900/20 dark:border-purple-800">
+                            <div className="p-6 rounded-xl border bg-purple-50 border-purple-200">
                                 <h3 className="text-gray-500 text-sm font-medium mb-1">Internal Rate of Return (IRR)</h3>
-                                <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">
-                                    {isNaN(irr) || !isFinite(irr) ? '0.00' : irr.toFixed(2)}%
-                                </div>
-                                <p className="text-xs mt-2 text-gray-500">
-                                    {irr > discountRate ? "IRR > Discount Rate (Layak)" : "IRR < Discount Rate (Tidak Layak)"}
-                                </p>
+                                <div className="text-3xl font-bold text-purple-600">{isNaN(irr) || !isFinite(irr) ? '0.00' : irr.toFixed(2)}%</div>
                             </div>
                         </div>
                     </div>
@@ -934,129 +782,60 @@
         };
 
         // ==========================================
-        // 6. MAIN APPLICATION COMPONENT
+        // 6. MAIN APP
         // ==========================================
-
         const App = () => {
-            const [activeTab, setActiveTab] = useState('omni'); // omni, fire, pro
+            const [activeTab, setActiveTab] = useState('omni'); 
             const [currency, setCurrency] = useState('IDR');
             const [exchangeRate, setExchangeRate] = useState(1);
             const [isDarkMode, setIsDarkMode] = useState(false);
 
-            // Fetch Real-time Rate (IDR to USD)
             useEffect(() => {
                 fetch('https://api.exchangerate-api.com/v4/latest/USD')
                     .then(res => res.json())
-                    .then(data => {
-                        if (data && data.rates && data.rates.IDR) {
-                            setExchangeRate(data.rates.IDR);
-                        }
-                    })
-                    .catch(err => console.error("Gagal mengambil nilai tukar:", err));
+                    .then(data => { if (data && data.rates && data.rates.IDR) setExchangeRate(data.rates.IDR); })
+                    .catch(err => console.error(err));
             }, []);
 
-            // Handle Theme
             useEffect(() => {
-                if (isDarkMode) {
-                    document.documentElement.classList.add('dark');
-                } else {
-                    document.documentElement.classList.remove('dark');
-                }
+                if (isDarkMode) document.documentElement.classList.add('dark');
+                else document.documentElement.classList.remove('dark');
             }, [isDarkMode]);
-
-            const printReport = () => {
-                window.print();
-            };
 
             return (
                 <div className="min-h-screen flex flex-col">
-                    {/* Top Navigation Bar */}
                     <nav className="glass-panel sticky top-0 z-50 border-b border-gray-200 dark:border-gray-800">
                         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                             <div className="flex justify-between items-center h-16">
                                 <div className="flex items-center gap-2">
-                                    <div className="bg-primary-600 text-white p-2 rounded-lg">
-                                        <Icons.Target />
-                                    </div>
-                                    <span className="font-black text-xl tracking-tight text-gray-900 dark:text-white">
-                                        OmniWealth<span className="text-primary-600 dark:text-primary-400">Pro</span>
-                                    </span>
+                                    <div className="bg-primary-600 text-white p-2 rounded-lg"><Icons.Target /></div>
+                                    <span className="font-black text-xl tracking-tight text-gray-900 dark:text-white">OmniWealth<span className="text-primary-600">Pro</span></span>
                                 </div>
-                                
                                 <div className="flex items-center gap-4">
-                                    <div className="text-xs font-medium text-gray-500 hidden md:block px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full">
-                                        1 USD = {formatNumber(exchangeRate)} IDR (Real-time)
+                                    <div className="text-xs font-medium text-gray-500 hidden md:block px-3 py-1 bg-gray-100 rounded-full">
+                                        1 USD = {formatNumber(exchangeRate)} IDR
                                     </div>
-                                    
-                                    <select 
-                                        value={currency} 
-                                        onChange={(e) => setCurrency(e.target.value)}
-                                        className="text-sm bg-transparent font-semibold border-none focus:ring-0 cursor-pointer dark:text-white"
-                                    >
-                                        <option value="IDR">IDR (Rp)</option>
-                                        <option value="USD">USD ($)</option>
+                                    <select value={currency} onChange={(e) => setCurrency(e.target.value)} className="text-sm bg-transparent font-semibold border-none focus:ring-0 cursor-pointer dark:text-white">
+                                        <option value="IDR">IDR (Rp)</option><option value="USD">USD ($)</option>
                                     </select>
-
-                                    <button 
-                                        onClick={() => setIsDarkMode(!isDarkMode)}
-                                        className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                                    >
-                                        {isDarkMode ? <Icons.Sun /> : <Icons.Moon />}
-                                    </button>
-
-                                    <button 
-                                        onClick={printReport}
-                                        className="flex items-center gap-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
-                                    >
-                                        <Icons.Printer /> <span className="hidden sm:inline">Cetak Laporan</span>
-                                    </button>
+                                    <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800">{isDarkMode ? <Icons.Sun /> : <Icons.Moon />}</button>
                                 </div>
                             </div>
                         </div>
                     </nav>
 
-                    {/* Main Workspace */}
                     <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                        
-                        {/* Tool Selector */}
                         <div className="flex space-x-2 mb-8 overflow-x-auto pb-2 no-print">
-                            <button 
-                                onClick={() => setActiveTab('omni')}
-                                className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-2
-                                    ${activeTab === 'omni' ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/50 dark:text-primary-300' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'}`}
-                            >
-                                <Icons.Calculator /> Kalkulator Pusat (Omni-Directional)
-                            </button>
-                            <button 
-                                onClick={() => setActiveTab('fire')}
-                                className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-2
-                                    ${activeTab === 'fire' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'}`}
-                            >
-                                <Icons.TrendingUp /> Simulasi FIRE & Pensiun
-                            </button>
-                            <button 
-                                onClick={() => setActiveTab('pro')}
-                                className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-2
-                                    ${activeTab === 'pro' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'}`}
-                            >
-                                <Icons.Activity /> Metrik Profesional (NPV/IRR)
-                            </button>
+                            <button onClick={() => setActiveTab('omni')} className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap flex items-center gap-2 ${activeTab === 'omni' ? 'bg-primary-100 text-primary-700' : 'text-gray-600 hover:bg-gray-100'}`}><Icons.Calculator /> Kalkulator Pusat</button>
+                            <button onClick={() => setActiveTab('fire')} className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap flex items-center gap-2 ${activeTab === 'fire' ? 'bg-orange-100 text-orange-700' : 'text-gray-600 hover:bg-gray-100'}`}><Icons.TrendingUp /> Simulasi FIRE</button>
+                            <button onClick={() => setActiveTab('pro')} className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap flex items-center gap-2 ${activeTab === 'pro' ? 'bg-purple-100 text-purple-700' : 'text-gray-600 hover:bg-gray-100'}`}><Icons.Activity /> Metrik Profesional</button>
                         </div>
-
-                        {/* Render Active Tool */}
                         <div className="transition-all">
                             {activeTab === 'omni' && <OmniCalculator currency={currency} />}
                             {activeTab === 'fire' && <FIRECalculator currency={currency} />}
                             {activeTab === 'pro' && <ProMetrics currency={currency} />}
                         </div>
-
                     </main>
-
-                    {/* Footer */}
-                    <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 py-8 text-center text-sm text-gray-500 mt-auto no-print">
-                        <p>OmniWealth Pro &copy; 2026. Semua perhitungan adalah simulasi matematis. Tidak menjamin kinerja pasar riil.</p>
-                        <p className="mt-1 text-xs">Rumus menggunakan standar perhitungan nilai waktu uang (Time Value of Money) dan bunga majemuk.</p>
-                    </footer>
                 </div>
             );
         };
