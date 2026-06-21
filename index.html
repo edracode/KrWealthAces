@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OmniWealth Pro - Pusat Simulasi Finansial</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -20,18 +19,13 @@
         }
     </script>
 
-    <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     
-    <!-- Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- Chart.js & React-ChartJS-2 -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <!-- Lucide Icons (SVG fallback digunakan di dalam kode untuk stabilitas offline) -->
-
     <style>
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -271,6 +265,9 @@
                 </div>
             );
         };
+
+        // Custom InputField to wrap the InputGroup with specific styling
+        const InputField = (props) => <InputGroup {...props} />;
 
         const SelectGroup = ({ label, value, onChange, options }) => (
             <div className="mb-4">
@@ -682,7 +679,7 @@
                                     </div>
                                     <div className="mt-4 text-center">
                                         <p className="text-xs text-gray-500">Rasio Keuntungan (ROI)</p>
-                                        <p className="text-lg font-bold text-green-500">+{results?.roi.toFixed(2)}%</p>
+                                        <p className="text-lg font-bold text-green-500">+{(results?.roi || 0).toFixed(2)}%</p>
                                     </div>
                                 </Card>
                             </div>
@@ -727,9 +724,6 @@
                 </div>
             );
         };
-
-        // Custom InputField to wrap the InputGroup with specific styling
-        const InputField = (props) => <InputGroup {...props} />;
 
 
         // ==========================================
