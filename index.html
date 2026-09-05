@@ -56,7 +56,7 @@
     <div id="root"></div>
 
     <script type="text/babel" data-presets="react">
-        const { useState, useEffect, useMemo, useCallback, useRef } = React;
+        const { useState, useEffect, useCallback, useRef } = React;
 
         // ==========================================
         // 1. UTILS & MATHEMATICAL CORE FUNCTIONS
@@ -109,7 +109,7 @@
 
         const calcRATE = (nper, pmt, pv, fv, type = 0, guess = 0.1) => {
             if (nper <= 0) return 0;
-            let rate = guess, y, y0, y1, x0, x1 = 0, f = 0, i = 0;
+            let rate = guess, y, i = 0;
             let maxIter = 100, epsMax = 1e-6;
 
             const f_rate = (r) => {
@@ -140,18 +140,17 @@
         // 2. UI COMPONENTS
         // ==========================================
         const Icons = {
-            Calculator: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="18"></line><path d="M8 10h.01"></path><path d="M12 10h.01"></path><path d="M16 10h.01"></path><path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M8 18h.01"></path><path d="M12 18h.01"></path></svg>,
+            Calculator: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="18"></line></svg>,
             TrendingUp: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>,
             Target: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>,
             Activity: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>,
             Moon: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>,
-            Sun: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            Sun: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>,
+            Trash: () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
         };
 
         const Card = ({ children, className = "" }) => (
-            <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 ${className}`}>
-                {children}
-            </div>
+            <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 ${className}`}>{children}</div>
         );
 
         const StatBox = ({ title, value, subtitle, highlight = false, color="blue" }) => {
@@ -165,7 +164,6 @@
                 <div className={`p-4 rounded-lg border ${highlight ? 'border-blue-200 dark:border-blue-800 ' + colors[color] : 'border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50'}`}>
                     <p className="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">{title}</p>
                     <p className={`text-2xl font-bold ${highlight ? '' : 'text-gray-900 dark:text-white'}`}>{value}</p>
-                    {subtitle && <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{subtitle}</p>}
                 </div>
             )
         };
@@ -183,7 +181,7 @@
 
             return (
                 <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
+                    {label && <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>}
                     <div className="relative rounded-md shadow-sm">
                         {prefix && <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span className="text-gray-500 sm:text-sm">{prefix}</span></div>}
                         <input
@@ -213,9 +211,11 @@
         const KrCalculator = ({ currency }) => {
             const [solveFor, setSolveFor] = useState('FV');
             const [contributionCategory, setContributionCategory] = useState('fixed'); 
-            const [dynamicStepAmount, setDynamicStepAmount] = useState(500000); // Kategori 2: Tambah Y
-            const [dynamicStepInterval, setDynamicStepInterval] = useState(12); // Kategori 2: Tiap X kali setoran
+            
+            // Kategori 2: Jadwal Setoran Kustom
+            const [customSchedule, setCustomSchedule] = useState([{ startYear: 1, endYear: 3, amount: 0 }]);
 
+            // Semua Value dimulai dari 0
             const [principal, setPrincipal] = useState(0);
             const [contribution, setContribution] = useState(0);
             const [rate, setRate] = useState(0);
@@ -233,6 +233,20 @@
             const chartRef = useRef(null);
             const pieChartRef = useRef(null);
 
+            // Handler Tambah/Hapus Jadwal Custom
+            const updateCustomSchedule = (idx, field, val) => {
+                const newSchedule = [...customSchedule];
+                newSchedule[idx][field] = val;
+                setCustomSchedule(newSchedule);
+            };
+            const addCustomSchedule = () => {
+                const lastEnd = customSchedule.length > 0 ? customSchedule[customSchedule.length - 1].endYear : 0;
+                setCustomSchedule([...customSchedule, { startYear: lastEnd + 1, endYear: lastEnd + 2, amount: 0 }]);
+            };
+            const removeCustomSchedule = (idx) => {
+                setCustomSchedule(customSchedule.filter((_, i) => i !== idx));
+            };
+
             const calculateAll = useCallback(() => {
                 let P = parseFloat(principal) || 0;
                 let C = parseFloat(contribution) || 0;
@@ -247,16 +261,20 @@
                 let calculatedFV = 0, calculatedPMT = C, calculatedNPER = periods, calculatedRate = ratePerContribute, calculatedTarget = T;
                 const isDynamic = contributionCategory === 'dynamic';
 
-                const getCont = (baseC, periodIdx) => {
-                    if (!isDynamic || dynamicStepInterval <= 0 || dynamicStepAmount === 0) return baseC;
-                    let stepCount = Math.floor((periodIdx - 1) / dynamicStepInterval);
-                    return Math.max(0, baseC + (stepCount * dynamicStepAmount)); // Tidak boleh negatif
+                // Fungsi untuk mengambil nominal setoran berdasarkan periode (bulan/hari/tahun)
+                const getCont = (periodIdx) => {
+                    if (!isDynamic) return C;
+                    
+                    let currentYear = Math.ceil(periodIdx / freqContribute);
+                    // Cari jadwal yang rentangnya mencakup tahun saat ini
+                    let schedule = customSchedule.find(s => currentYear >= s.startYear && currentYear <= s.endYear);
+                    return schedule ? schedule.amount : 0;
                 };
 
-                const simulateLoop = (testP, testPMT, testR, testN) => {
+                const simulateLoop = (testP, testR, testN) => {
                     let bal = testP;
                     for (let i = 1; i <= testN; i++) {
-                        let c = getCont(testPMT, i);
+                        let c = getCont(i);
                         let interest = bal * testR;
                         if (timing === 1) {
                             interest = (bal + c) * testR;
@@ -268,7 +286,7 @@
 
                 try {
                     if (!isDynamic) {
-                        // Math Category 1: Fixed
+                        // Kategori 1: Fixed
                         switch (solveFor) {
                             case 'FV': calculatedFV = calcFV(P, C, ratePerContribute, periods, timing); calculatedTarget = calculatedFV; break;
                             case 'PMT': calculatedPMT = calcPMT(T, P, ratePerContribute, periods, timing); C = calculatedPMT; calculatedFV = T; break;
@@ -276,26 +294,18 @@
                             case 'NPER': calculatedNPER = calcNPER(T, P, C, ratePerContribute, timing); Y = calculatedNPER / freqContribute; periods = calculatedNPER; calculatedFV = T; break;
                         }
                     } else {
-                        // Math Category 2: Dynamic / Bertahap (Iterative Search)
+                        // Kategori 2: Fleksibel Kustom
                         switch (solveFor) {
                             case 'FV':
-                                calculatedFV = simulateLoop(P, C, ratePerContribute, periods);
+                                calculatedFV = simulateLoop(P, ratePerContribute, periods);
                                 calculatedTarget = calculatedFV;
                                 break;
-                            case 'PMT':
-                                let lowC = 0, highC = T || 1e12;
-                                for(let iter=0; iter<60; iter++) {
-                                    let mid = (lowC+highC)/2;
-                                    if (simulateLoop(P, mid, ratePerContribute, periods) < T) lowC = mid; else highC = mid;
-                                }
-                                calculatedPMT = (lowC+highC)/2;
-                                C = calculatedPMT; calculatedFV = T;
-                                break;
+                            // PMT diabaikan pada Setoran Fleksibel karena user sudah menentukan jadwalnya sendiri.
                             case 'RATE':
                                 let lowR = -0.99, highR = 10;
                                 for(let iter=0; iter<60; iter++) {
                                     let mid = (lowR+highR)/2;
-                                    if (simulateLoop(P, C, mid, periods) < T) lowR = mid; else highR = mid;
+                                    if (simulateLoop(P, mid, periods) < T) lowR = mid; else highR = mid;
                                 }
                                 calculatedRate = (lowR+highR)/2;
                                 R = (Math.pow(1 + calculatedRate, freqContribute/freqCompound) - 1) * freqCompound * 100;
@@ -303,13 +313,20 @@
                                 break;
                             case 'NPER':
                                 let bal = P, i = 0, maxIter = 12000;
+                                let maxDefinedYear = customSchedule.length > 0 ? Math.max(...customSchedule.map(s => s.endYear)) : 0;
+                                
                                 while(bal < T && i < maxIter) {
                                     i++;
-                                    let c = getCont(C, i);
+                                    let c = getCont(i);
                                     let interest = bal * ratePerContribute;
                                     if (timing === 1) { interest = (bal + c) * ratePerContribute; bal += c + interest; } 
                                     else { bal += interest + c; }
-                                    if (c === 0 && interest <= 0 && bal < T) { i = maxIter; break; }
+                                    
+                                    let currentYear = Math.ceil(i / freqContribute);
+                                    // Berhenti jika sudah melewati batas tahun jadwal dan uang tidak bertambah
+                                    if (currentYear > maxDefinedYear && c === 0 && interest <= 0 && bal < T) {
+                                        i = maxIter; break; 
+                                    }
                                 }
                                 calculatedNPER = (i >= maxIter) ? 0 : i;
                                 periods = calculatedNPER; Y = calculatedNPER / freqContribute; calculatedFV = T;
@@ -324,7 +341,7 @@
                 if (loopPeriods < 0 || isNaN(loopPeriods)) loopPeriods = 0;
 
                 for (let i = 1; i <= Math.ceil(loopPeriods); i++) {
-                    let cont = (i <= periods) ? (isDynamic ? getCont(C, i) : C) : 0;
+                    let cont = (i <= periods) ? (isDynamic ? getCont(i) : C) : 0;
                     let interest = currentBalance * ratePerContribute;
                     
                     if (timing === 1) { 
@@ -351,7 +368,7 @@
                 });
                 setSchedule(sched);
 
-            }, [principal, contribution, rate, years, targetFV, inflation, freqContribute, freqCompound, timing, solveFor, contributionCategory, dynamicStepAmount, dynamicStepInterval]);
+            }, [principal, contribution, rate, years, targetFV, inflation, freqContribute, freqCompound, timing, solveFor, contributionCategory, customSchedule]);
 
             useEffect(() => { calculateAll(); }, [calculateAll]);
 
@@ -390,6 +407,17 @@
 
             }, [results, currency]);
 
+            // Menyesuaikan Opsi Pencarian berdasarkan Kategori
+            let solveOptions = [
+                { value: 'FV', label: 'Cari Hasil Akhir (Target Kekayaan)' },
+                { value: 'RATE', label: 'Cari Tingkat Pengembalian (Bunga) Min.' },
+                { value: 'NPER', label: 'Cari Durasi Waktu Pencapaian' }
+            ];
+            // Tambahkan mode cari "Setoran (PMT)" hanya jika menggunakan setoran kategori 1 (Fixed)
+            if (contributionCategory === 'fixed') {
+                solveOptions.splice(1, 0, { value: 'PMT', label: 'Cari Setoran Berkala yang Dibutuhkan' });
+            }
+
             return (
                 <div className="space-y-6">
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -398,21 +426,24 @@
                                 <Icons.Calculator /> Parameter Simulasi
                             </h2>
                             
-                            <SelectGroup 
-                                label="Target Pencarian" value={solveFor} onChange={setSolveFor}
-                                options={[
-                                    { value: 'FV', label: 'Cari Hasil Akhir (Target Kekayaan)' },
-                                    { value: 'PMT', label: 'Cari Setoran Berkala yang Dibutuhkan' },
-                                    { value: 'RATE', label: 'Cari Tingkat Pengembalian (Bunga) Min.' },
-                                    { value: 'NPER', label: 'Cari Durasi Waktu Pencapaian' }
-                                ]}
-                            />
+                            <SelectGroup label="Target Pencarian" value={solveFor} onChange={setSolveFor} options={solveOptions} />
 
                             <div className="mb-4">
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Kategori Simulasi</label>
                                 <div className="flex gap-2 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg">
-                                    <button onClick={() => setContributionCategory('fixed')} className={`flex-1 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all ${contributionCategory === 'fixed' ? 'bg-white dark:bg-gray-800 shadow text-primary-600' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}>1. Setoran Tetap</button>
-                                    <button onClick={() => setContributionCategory('dynamic')} className={`flex-1 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all ${contributionCategory === 'dynamic' ? 'bg-white dark:bg-gray-800 shadow text-primary-600' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}>2. Setoran Bertahap</button>
+                                    <button 
+                                        onClick={() => setContributionCategory('fixed')} 
+                                        className={`flex-1 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all ${contributionCategory === 'fixed' ? 'bg-white dark:bg-gray-800 shadow text-primary-600' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}>
+                                        1. Setoran Tetap
+                                    </button>
+                                    <button 
+                                        onClick={() => {
+                                            setContributionCategory('dynamic');
+                                            if (solveFor === 'PMT') setSolveFor('FV'); // Hindari error matematis PMT saat mode dinamis
+                                        }} 
+                                        className={`flex-1 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all ${contributionCategory === 'dynamic' ? 'bg-white dark:bg-gray-800 shadow text-primary-600' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}>
+                                        2. Setoran Fleksibel
+                                    </button>
                                 </div>
                             </div>
 
@@ -420,15 +451,39 @@
                                 <InputField label="Modal Awal" value={principal} onChange={setPrincipal} prefix={currency} />
                                 {solveFor !== 'FV' && <InputField label="Target Hasil Akhir (Future Value)" value={targetFV} onChange={setTargetFV} prefix={currency} />}
                                 
-                                {solveFor !== 'PMT' && <InputField label={contributionCategory === 'dynamic' ? "Setoran Berkala Awal" : "Setoran Berkala"} value={contribution} onChange={setContribution} prefix={currency} />}
+                                {contributionCategory === 'fixed' && solveFor !== 'PMT' && (
+                                    <InputField label="Setoran Berkala" value={contribution} onChange={setContribution} prefix={currency} />
+                                )}
                                 
                                 {contributionCategory === 'dynamic' && (
-                                    <div className="p-4 bg-primary-50 dark:bg-primary-900/10 border border-primary-100 dark:border-primary-900/50 rounded-lg space-y-4 mb-4">
-                                        <p className="text-xs font-semibold text-primary-700 dark:text-primary-400 uppercase tracking-wider">Kategori 2: Parameter Dinamis</p>
-                                        <InputField label="Ubah Nominal Setoran (Y)" value={dynamicStepAmount} onChange={setDynamicStepAmount} prefix={currency} step={10000} />
-                                        <InputField label="Tiap (X) Kali Setoran" value={dynamicStepInterval} onChange={setDynamicStepInterval} type="number" min="1" step="1" />
-                                        <p className="text-xs text-primary-600/80 dark:text-primary-400/80 leading-relaxed">
-                                            Setoran akan {dynamicStepAmount >= 0 ? 'bertambah' : 'berkurang'} sebesar {formatCurrency(Math.abs(dynamicStepAmount), currency)} setiap kelipatan {dynamicStepInterval} kali penyetoran.
+                                    <div className="p-4 bg-primary-50 dark:bg-primary-900/10 border border-primary-100 dark:border-primary-900/50 rounded-lg mb-4">
+                                        <p className="text-xs font-semibold text-primary-700 dark:text-primary-400 uppercase tracking-wider mb-4">
+                                            Jadwal Setoran Kustom
+                                        </p>
+                                        <div className="space-y-3 mb-4">
+                                            {customSchedule.map((item, idx) => (
+                                                <div key={idx} className="flex gap-2 items-end">
+                                                    <div className="w-1/4">
+                                                        <InputField label={idx===0 ? "Thn Awal" : ""} value={item.startYear} onChange={(v) => updateCustomSchedule(idx, 'startYear', v)} min="1" type="number" />
+                                                    </div>
+                                                    <div className="w-1/4">
+                                                        <InputField label={idx===0 ? "Thn Akhir" : ""} value={item.endYear} onChange={(v) => updateCustomSchedule(idx, 'endYear', v)} min="1" type="number" />
+                                                    </div>
+                                                    <div className="w-2/4 relative">
+                                                        <InputField label={idx===0 ? "Nominal /Periode" : ""} value={item.amount} onChange={(v) => updateCustomSchedule(idx, 'amount', v)} prefix={currency} />
+                                                    </div>
+                                                    <button onClick={() => removeCustomSchedule(idx)} className="mb-4 p-2 bg-red-100 text-red-600 rounded-md hover:bg-red-200 transition" title="Hapus Jadwal">
+                                                        <Icons.Trash />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <button onClick={addCustomSchedule} className="w-full py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                                            + Tambah Rentang Waktu
+                                        </button>
+                                        <p className="text-[11px] text-primary-600/80 dark:text-primary-400/80 leading-relaxed mt-4">
+                                            Setoran akan diterapkan berdasarkan rentang <b>Tahun</b> yang ditentukan. 
+                                            Jika frekuensi diset Bulanan, maka setoran tersebut akan berjalan setiap bulan pada rentang tahun tersebut.
                                         </p>
                                     </div>
                                 )}
@@ -451,7 +506,7 @@
                         <div className="lg:col-span-2 space-y-6">
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                 <StatBox title={solveFor === 'FV' ? "Estimasi Hasil Akhir" : "Target Hasil Akhir"} value={formatCurrency(results ? results.futureValue : 0, currency)} highlight={solveFor === 'FV'} color="blue" />
-                                <StatBox title={solveFor === 'PMT' ? "Setoran Awal Diperlukan" : "Total Setoran"} value={solveFor === 'PMT' ? formatCurrency(results ? results.calculatedPMT : 0, currency) + " /per" : formatCurrency(results ? results.totalInvested : 0, currency)} highlight={solveFor === 'PMT'} color="green" />
+                                <StatBox title={solveFor === 'PMT' ? "Setoran Berkala Diperlukan" : "Total Keseluruhan Setoran"} value={solveFor === 'PMT' ? formatCurrency(results ? results.calculatedPMT : 0, currency) + " /per" : formatCurrency(results ? results.totalInvested : 0, currency)} highlight={solveFor === 'PMT'} color="green" />
                                 <StatBox title={solveFor === 'RATE' ? "Return Diperlukan" : "Total Keuntungan"} value={solveFor === 'RATE' ? (results ? results.calculatedRate : 0).toFixed(2) + "% /thn" : formatCurrency(results ? results.totalInterest : 0, currency)} highlight={solveFor === 'RATE'} color="purple" />
                                 <StatBox title={solveFor === 'NPER' ? "Waktu Dibutuhkan" : "Nilai Riil (Setelah Inflasi)"} value={solveFor === 'NPER' ? (results ? results.calculatedYears : 0).toFixed(1) + " Tahun" : formatCurrency(results ? results.realValue : 0, currency)} highlight={solveFor === 'NPER'} color="orange" />
                             </div>
@@ -477,7 +532,7 @@
                         <h2 className="text-lg font-bold mb-4">Rincian Berkala</h2>
                         <div className="overflow-x-auto max-h-96">
                             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                <thead className="bg-gray-50 dark:bg-gray-800 sticky top-0">
+                                <thead className="bg-gray-50 dark:bg-gray-800 sticky top-0 z-10">
                                     <tr>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Periode</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tahun</th>
@@ -501,7 +556,7 @@
                                 </tbody>
                             </table>
                             {schedule.length > 100 && (
-                                <div className="p-4 text-center text-sm text-gray-500">Menampilkan 100 periode pertama dari total {schedule.length} periode.</div>
+                                <div className="p-4 text-center text-sm text-gray-500 border-t border-gray-200 dark:border-gray-800">Menampilkan 100 periode pertama dari total {schedule.length} periode.</div>
                             )}
                         </div>
                     </Card>
@@ -515,10 +570,10 @@
         const FIRECalculator = ({ currency }) => {
             const [currentAge, setCurrentAge] = useState(0); const [currentSavings, setCurrentSavings] = useState(0);
             const [monthlyExpense, setMonthlyExpense] = useState(0); const [monthlySavings, setMonthlySavings] = useState(0);
-            const [annualReturn, setAnnualReturn] = useState(0); const [safeWithdrawalRate, setSafeWithdrawalRate] = useState(4);
+            const [annualReturn, setAnnualReturn] = useState(0); const [safeWithdrawalRate, setSafeWithdrawalRate] = useState(0);
             const [inflation, setInflation] = useState(0);
 
-            const targetFIRE = monthlyExpense > 0 ? (monthlyExpense * 12) / (safeWithdrawalRate / 100) : 0;
+            const targetFIRE = monthlyExpense > 0 && safeWithdrawalRate > 0 ? (monthlyExpense * 12) / (safeWithdrawalRate / 100) : 0;
             const netReturn = ((1 + annualReturn/100) / (1 + inflation/100)) - 1; 
             
             let yearsToFIRE = 0;
@@ -603,7 +658,7 @@
                                 {cashflows.map((cf, idx) => (
                                     <div key={idx} className="flex items-center gap-2 mb-2"><span className="text-sm text-gray-500 w-16">Thn {idx + 1}</span><div className="flex-1"><InputField label="" value={cf} onChange={(v) => updateCF(idx, v)} prefix={currency} /></div></div>
                                 ))}
-                                <div className="flex gap-2"><button onClick={addYear} className="flex-1 px-3 py-2 bg-gray-100 dark:bg-gray-700 text-sm rounded">+ Tambah</button><button onClick={removeYear} className="px-3 py-2 bg-red-50 text-red-600 text-sm rounded">-</button></div>
+                                <div className="flex gap-2"><button onClick={addYear} className="flex-1 px-3 py-2 bg-gray-100 dark:bg-gray-700 text-sm rounded hover:bg-gray-200">+ Tambah</button><button onClick={removeYear} className="px-3 py-2 bg-red-50 text-red-600 text-sm rounded hover:bg-red-100">-</button></div>
                             </div>
                         </div>
                         <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 h-max">
@@ -664,9 +719,9 @@
 
                     <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
                         <div className="flex space-x-2 mb-8 overflow-x-auto pb-2 no-print">
-                            <button onClick={() => setActiveTab('kr')} className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap flex items-center gap-2 ${activeTab === 'kr' ? 'bg-primary-100 text-primary-700' : 'text-gray-600 hover:bg-gray-100'}`}><Icons.Calculator /> Kalkulator Pusat</button>
-                            <button onClick={() => setActiveTab('fire')} className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap flex items-center gap-2 ${activeTab === 'fire' ? 'bg-orange-100 text-orange-700' : 'text-gray-600 hover:bg-gray-100'}`}><Icons.TrendingUp /> Simulasi FIRE</button>
-                            <button onClick={() => setActiveTab('pro')} className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap flex items-center gap-2 ${activeTab === 'pro' ? 'bg-purple-100 text-purple-700' : 'text-gray-600 hover:bg-gray-100'}`}><Icons.Activity /> Metrik Profesional</button>
+                            <button onClick={() => setActiveTab('kr')} className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap flex items-center gap-2 ${activeTab === 'kr' ? 'bg-primary-100 text-primary-700' : 'text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800'}`}><Icons.Calculator /> Kalkulator Pusat</button>
+                            <button onClick={() => setActiveTab('fire')} className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap flex items-center gap-2 ${activeTab === 'fire' ? 'bg-orange-100 text-orange-700' : 'text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800'}`}><Icons.TrendingUp /> Simulasi FIRE</button>
+                            <button onClick={() => setActiveTab('pro')} className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap flex items-center gap-2 ${activeTab === 'pro' ? 'bg-purple-100 text-purple-700' : 'text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800'}`}><Icons.Activity /> Metrik Profesional</button>
                         </div>
                         <div className="transition-all">
                             {activeTab === 'kr' && <KrCalculator currency={currency} />}
