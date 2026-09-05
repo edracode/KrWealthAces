@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OmniWealth Pro - Pusat Simulasi Finansial</title>
+    <title>KrWealthAces - Pusat Simulasi Finansial</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -21,33 +21,30 @@
         }
     </script>
 
-    <!-- Menggunakan CDN yang lebih stabil (cdnjs) -->
+    <!-- React & Babel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.3/babel.min.js"></script>
     
-    <!-- Chart.js UMD Version (Mencegah error 'Chart is not defined') -->
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js"></script>
     
     <style>
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .dark ::-webkit-scrollbar-thumb { background: #475569; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
-        /* Input Number Hide Arrows */
         input[type=number]::-webkit-inner-spin-button, 
         input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; }
 
-        /* Print Styles */
         @media print {
             .no-print { display: none !important; }
             body { background: white !important; color: black !important; }
             .print-break { page-break-before: always; }
-            .shadow-lg, .shadow-md { box-shadow: none !important; border: 1px solid #e2e8f0; }
+            .shadow-lg, .shadow-md, .shadow-sm { box-shadow: none !important; border: 1px solid #e2e8f0; }
         }
 
         body { font-family: 'Inter', system-ui, sans-serif; transition: background-color 0.3s, color 0.3s; }
@@ -58,7 +55,6 @@
 <body class="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 min-h-screen">
     <div id="root"></div>
 
-    <!-- Menambahkan data-presets agar Babel selalu membaca mode React standar -->
     <script type="text/babel" data-presets="react">
         const { useState, useEffect, useMemo, useCallback, useRef } = React;
 
@@ -69,10 +65,7 @@
         const formatCurrency = (value, currency = 'IDR') => {
             if (isNaN(value) || value === null) return '0';
             return new Intl.NumberFormat('id-ID', {
-                style: 'currency',
-                currency: currency,
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0
+                style: 'currency', currency: currency, minimumFractionDigits: 0, maximumFractionDigits: 0
             }).format(value);
         };
 
@@ -116,10 +109,8 @@
 
         const calcRATE = (nper, pmt, pv, fv, type = 0, guess = 0.1) => {
             if (nper <= 0) return 0;
-            let rate = guess;
-            let y, y0, y1, x0, x1 = 0, f = 0, i = 0;
-            let maxIter = 100;
-            let epsMax = 1e-6;
+            let rate = guess, y, y0, y1, x0, x1 = 0, f = 0, i = 0;
+            let maxIter = 100, epsMax = 1e-6;
 
             const f_rate = (r) => {
                 if(r===0) return pv + pmt*nper - fv;
@@ -146,18 +137,15 @@
         };
 
         // ==========================================
-        // 2. UI COMPONENTS (ICONS & WIDGETS)
+        // 2. UI COMPONENTS
         // ==========================================
-
         const Icons = {
             Calculator: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="18"></line><path d="M8 10h.01"></path><path d="M12 10h.01"></path><path d="M16 10h.01"></path><path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M8 18h.01"></path><path d="M12 18h.01"></path></svg>,
             TrendingUp: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>,
             Target: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>,
-            PieChart: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>,
             Activity: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>,
             Moon: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>,
-            Sun: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>,
-            Printer: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+            Sun: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
         };
 
         const Card = ({ children, className = "" }) => (
@@ -173,7 +161,6 @@
                 purple: "text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20",
                 orange: "text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20",
             };
-            
             return (
                 <div className={`p-4 rounded-lg border ${highlight ? 'border-blue-200 dark:border-blue-800 ' + colors[color] : 'border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50'}`}>
                     <p className="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">{title}</p>
@@ -183,22 +170,14 @@
             )
         };
 
-        const InputGroup = ({ label, value, onChange, type = "text", prefix, suffix, disabled = false, min, step }) => {
+        const InputField = ({ label, value, onChange, type = "text", prefix, suffix, disabled = false, min, step }) => {
             const [raw, setRaw] = useState(value === 0 ? "0" : (value ? value.toString() : "0"));
-
-            useEffect(() => {
-                if(!disabled) {
-                   setRaw(value !== null && value !== undefined ? value.toString() : "0"); 
-                }
-            }, [value, disabled]);
+            useEffect(() => { if(!disabled) setRaw(value !== null && value !== undefined ? value.toString() : "0"); }, [value, disabled]);
 
             const handleChange = (e) => {
                 let val = e.target.value;
                 setRaw(val);
-                if (val === "" || val === "-") {
-                    onChange(0);
-                    return;
-                }
+                if (val === "" || val === "-") { onChange(0); return; }
                 onChange(parseNumber(val));
             };
 
@@ -206,47 +185,22 @@
                 <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
                     <div className="relative rounded-md shadow-sm">
-                        {prefix && (
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <span className="text-gray-500 dark:text-gray-400 sm:text-sm">{prefix}</span>
-                            </div>
-                        )}
+                        {prefix && <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span className="text-gray-500 sm:text-sm">{prefix}</span></div>}
                         <input
-                            type={type}
-                            value={disabled ? formatNumber(value) : raw}
-                            onChange={handleChange}
-                            disabled={disabled}
-                            min={min}
-                            step={step}
-                            className={`block w-full sm:text-sm rounded-md transition-colors
-                                ${prefix ? 'pl-10' : 'pl-3'} 
-                                ${suffix ? 'pr-12' : 'pr-3'} 
-                                py-2 border 
-                                ${disabled 
-                                    ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 border-gray-200 dark:border-gray-600 cursor-not-allowed' 
-                                    : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 focus:ring-primary-500 focus:border-primary-500'}
-                            `}
+                            type={type} value={disabled ? formatNumber(value) : raw} onChange={handleChange} disabled={disabled} min={min} step={step}
+                            className={`block w-full sm:text-sm rounded-md transition-colors ${prefix ? 'pl-10' : 'pl-3'} ${suffix ? 'pr-12' : 'pr-3'} py-2 border 
+                                ${disabled ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 border-gray-200 dark:border-gray-600 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 focus:ring-primary-500 focus:border-primary-500'}`}
                         />
-                        {suffix && (
-                            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                <span className="text-gray-500 dark:text-gray-400 sm:text-sm">{suffix}</span>
-                            </div>
-                        )}
+                        {suffix && <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><span className="text-gray-500 sm:text-sm">{suffix}</span></div>}
                     </div>
                 </div>
             );
         };
 
-        const InputField = (props) => <InputGroup {...props} />;
-
         const SelectGroup = ({ label, value, onChange, options }) => (
             <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
-                <select
-                    value={value}
-                    onChange={(e) => onChange(e.target.value)}
-                    className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                >
+                <select value={value} onChange={(e) => onChange(e.target.value)} className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
                     {options.map((opt, i) => <option key={i} value={opt.value}>{opt.label}</option>)}
                 </select>
             </div>
@@ -256,8 +210,12 @@
         // 3. MAIN CALCULATOR MODULE
         // ==========================================
 
-        const OmniCalculator = ({ currency }) => {
+        const KrCalculator = ({ currency }) => {
             const [solveFor, setSolveFor] = useState('FV');
+            const [contributionCategory, setContributionCategory] = useState('fixed'); 
+            const [dynamicStepAmount, setDynamicStepAmount] = useState(500000); // Kategori 2: Tambah Y
+            const [dynamicStepInterval, setDynamicStepInterval] = useState(12); // Kategori 2: Tiap X kali setoran
+
             const [principal, setPrincipal] = useState(0);
             const [contribution, setContribution] = useState(0);
             const [rate, setRate] = useState(0);
@@ -286,69 +244,101 @@
                 let periods = Y * freqContribute;
                 let ratePerContribute = Math.pow(1 + (R/100/freqCompound), freqCompound/freqContribute) - 1;
 
-                let calculatedFV = 0;
-                let calculatedPMT = C;
-                let calculatedNPER = periods;
-                let calculatedRate = ratePerContribute;
-                let calculatedTarget = T;
+                let calculatedFV = 0, calculatedPMT = C, calculatedNPER = periods, calculatedRate = ratePerContribute, calculatedTarget = T;
+                const isDynamic = contributionCategory === 'dynamic';
+
+                const getCont = (baseC, periodIdx) => {
+                    if (!isDynamic || dynamicStepInterval <= 0 || dynamicStepAmount === 0) return baseC;
+                    let stepCount = Math.floor((periodIdx - 1) / dynamicStepInterval);
+                    return Math.max(0, baseC + (stepCount * dynamicStepAmount)); // Tidak boleh negatif
+                };
+
+                const simulateLoop = (testP, testPMT, testR, testN) => {
+                    let bal = testP;
+                    for (let i = 1; i <= testN; i++) {
+                        let c = getCont(testPMT, i);
+                        let interest = bal * testR;
+                        if (timing === 1) {
+                            interest = (bal + c) * testR;
+                            bal += c + interest;
+                        } else { bal += interest + c; }
+                    }
+                    return bal;
+                };
 
                 try {
-                    switch (solveFor) {
-                        case 'FV':
-                            calculatedFV = calcFV(P, C, ratePerContribute, periods, timing);
-                            calculatedTarget = calculatedFV;
-                            break;
-                        case 'PMT':
-                            calculatedPMT = calcPMT(T, P, ratePerContribute, periods, timing);
-                            C = calculatedPMT;
-                            calculatedFV = T;
-                            break;
-                        case 'RATE':
-                            calculatedRate = calcRATE(periods, C, P, T, timing);
-                            R = (Math.pow(1 + calculatedRate, freqContribute/freqCompound) - 1) * freqCompound * 100;
-                            calculatedFV = T;
-                            break;
-                        case 'NPER':
-                            calculatedNPER = calcNPER(T, P, C, ratePerContribute, timing);
-                            Y = calculatedNPER / freqContribute;
-                            periods = calculatedNPER;
-                            calculatedFV = T;
-                            break;
+                    if (!isDynamic) {
+                        // Math Category 1: Fixed
+                        switch (solveFor) {
+                            case 'FV': calculatedFV = calcFV(P, C, ratePerContribute, periods, timing); calculatedTarget = calculatedFV; break;
+                            case 'PMT': calculatedPMT = calcPMT(T, P, ratePerContribute, periods, timing); C = calculatedPMT; calculatedFV = T; break;
+                            case 'RATE': calculatedRate = calcRATE(periods, C, P, T, timing); R = (Math.pow(1 + calculatedRate, freqContribute/freqCompound) - 1) * freqCompound * 100; calculatedFV = T; break;
+                            case 'NPER': calculatedNPER = calcNPER(T, P, C, ratePerContribute, timing); Y = calculatedNPER / freqContribute; periods = calculatedNPER; calculatedFV = T; break;
+                        }
+                    } else {
+                        // Math Category 2: Dynamic / Bertahap (Iterative Search)
+                        switch (solveFor) {
+                            case 'FV':
+                                calculatedFV = simulateLoop(P, C, ratePerContribute, periods);
+                                calculatedTarget = calculatedFV;
+                                break;
+                            case 'PMT':
+                                let lowC = 0, highC = T || 1e12;
+                                for(let iter=0; iter<60; iter++) {
+                                    let mid = (lowC+highC)/2;
+                                    if (simulateLoop(P, mid, ratePerContribute, periods) < T) lowC = mid; else highC = mid;
+                                }
+                                calculatedPMT = (lowC+highC)/2;
+                                C = calculatedPMT; calculatedFV = T;
+                                break;
+                            case 'RATE':
+                                let lowR = -0.99, highR = 10;
+                                for(let iter=0; iter<60; iter++) {
+                                    let mid = (lowR+highR)/2;
+                                    if (simulateLoop(P, C, mid, periods) < T) lowR = mid; else highR = mid;
+                                }
+                                calculatedRate = (lowR+highR)/2;
+                                R = (Math.pow(1 + calculatedRate, freqContribute/freqCompound) - 1) * freqCompound * 100;
+                                calculatedFV = T;
+                                break;
+                            case 'NPER':
+                                let bal = P, i = 0, maxIter = 12000;
+                                while(bal < T && i < maxIter) {
+                                    i++;
+                                    let c = getCont(C, i);
+                                    let interest = bal * ratePerContribute;
+                                    if (timing === 1) { interest = (bal + c) * ratePerContribute; bal += c + interest; } 
+                                    else { bal += interest + c; }
+                                    if (c === 0 && interest <= 0 && bal < T) { i = maxIter; break; }
+                                }
+                                calculatedNPER = (i >= maxIter) ? 0 : i;
+                                periods = calculatedNPER; Y = calculatedNPER / freqContribute; calculatedFV = T;
+                                break;
+                        }
                     }
-                } catch (e) {
-                    console.error("Math Error", e);
-                    return;
-                }
+                } catch (e) { console.error(e); return; }
 
-                let currentBalance = P;
-                let totalInvested = P;
-                let sched = [];
-                let yearlyData = {};
-
+                // Build Table Schedule
+                let currentBalance = P, totalInvested = P, sched = [], yearlyData = {};
                 let loopPeriods = Math.min(periods, 12000); 
                 if (loopPeriods < 0 || isNaN(loopPeriods)) loopPeriods = 0;
 
                 for (let i = 1; i <= Math.ceil(loopPeriods); i++) {
+                    let cont = (i <= periods) ? (isDynamic ? getCont(C, i) : C) : 0;
                     let interest = currentBalance * ratePerContribute;
-                    let cont = (i <= periods) ? C : 0;
                     
                     if (timing === 1) { 
                         interest = (currentBalance + cont) * ratePerContribute;
                         currentBalance += cont + interest;
-                    } else { 
-                        currentBalance += interest + cont;
-                    }
+                    } else { currentBalance += interest + cont; }
                     
                     totalInvested += cont;
                     let year = Math.ceil(i / freqContribute);
                     
                     sched.push({ period: i, year: year, contribution: cont, interest: interest, balance: currentBalance, totalInvested: totalInvested });
 
-                    if (!yearlyData[year]) {
-                        yearlyData[year] = { year, balance: 0, invested: 0 };
-                    }
-                    yearlyData[year].balance = currentBalance;
-                    yearlyData[year].invested = totalInvested;
+                    if (!yearlyData[year]) yearlyData[year] = { year, balance: 0, invested: 0 };
+                    yearlyData[year].balance = currentBalance; yearlyData[year].invested = totalInvested;
                 }
 
                 let realValue = calculatedFV / Math.pow(1 + (Inf/100), Y);
@@ -356,33 +346,19 @@
                 let roi = totalInvested > 0 ? (totalInterest / totalInvested) * 100 : 0;
 
                 setResults({
-                    futureValue: calculatedFV,
-                    totalInvested: totalInvested,
-                    totalInterest: totalInterest,
-                    realValue: realValue,
-                    calculatedPMT: C,
-                    calculatedRate: R,
-                    calculatedYears: Y,
-                    roi: roi,
-                    yearlyData: Object.values(yearlyData)
+                    futureValue: calculatedFV, totalInvested: totalInvested, totalInterest: totalInterest, realValue: realValue,
+                    calculatedPMT: C, calculatedRate: R, calculatedYears: Y, roi: roi, yearlyData: Object.values(yearlyData)
                 });
                 setSchedule(sched);
 
-            }, [principal, contribution, rate, years, targetFV, inflation, freqContribute, freqCompound, timing, solveFor]);
+            }, [principal, contribution, rate, years, targetFV, inflation, freqContribute, freqCompound, timing, solveFor, contributionCategory, dynamicStepAmount, dynamicStepInterval]);
+
+            useEffect(() => { calculateAll(); }, [calculateAll]);
 
             useEffect(() => {
-                calculateAll();
-            }, [calculateAll]);
-
-            useEffect(() => {
-                if (!results) return;
-                if (!results.yearlyData || results.yearlyData.length === 0) return;
-                if (typeof window.Chart === 'undefined') return; // Pengaman agar tidak crash jika ChartJS gagal dimuat
-
-                const ctxLine = document.getElementById('growthChart');
-                const ctxPie = document.getElementById('compositionChart');
-
-                if (!ctxLine || !ctxPie) return; // Pengaman DOM
+                if (!results || !results.yearlyData || results.yearlyData.length === 0 || typeof window.Chart === 'undefined') return;
+                const ctxLine = document.getElementById('growthChart'); const ctxPie = document.getElementById('compositionChart');
+                if (!ctxLine || !ctxPie) return;
 
                 if (chartRef.current) chartRef.current.destroy();
                 if (pieChartRef.current) pieChartRef.current.destroy();
@@ -396,73 +372,20 @@
                     data: {
                         labels: results.yearlyData.map(d => `Thn ${d.year}`),
                         datasets: [
-                            {
-                                label: 'Total Saldo',
-                                data: results.yearlyData.map(d => d.balance),
-                                borderColor: '#3b82f6',
-                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                                fill: true,
-                                tension: 0.4
-                            },
-                            {
-                                label: 'Total Modal Disetor',
-                                data: results.yearlyData.map(d => d.invested),
-                                borderColor: '#10b981',
-                                borderDash: [5, 5],
-                                backgroundColor: 'transparent',
-                                fill: false,
-                                tension: 0.4
-                            }
+                            { label: 'Total Saldo', data: results.yearlyData.map(d => d.balance), borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.4 },
+                            { label: 'Total Modal Disetor', data: results.yearlyData.map(d => d.invested), borderColor: '#10b981', borderDash: [5, 5], backgroundColor: 'transparent', fill: false, tension: 0.4 }
                         ]
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        interaction: { mode: 'index', intersect: false },
-                        plugins: {
-                            legend: { labels: { color: textColor } },
-                            tooltip: { 
-                                callbacks: { 
-                                    label: function(context) {
-                                        return context.dataset.label + ': ' + formatCurrency(context.parsed.y, currency);
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            x: { grid: { color: gridColor }, ticks: { color: textColor } },
-                            y: { grid: { color: gridColor }, ticks: { color: textColor } }
-                        }
-                    }
+                    options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { labels: { color: textColor } }, tooltip: { callbacks: { label: function(c) { return c.dataset.label + ': ' + formatCurrency(c.parsed.y, currency); } } } }, scales: { x: { grid: { color: gridColor }, ticks: { color: textColor } }, y: { grid: { color: gridColor }, ticks: { color: textColor } } } }
                 });
 
                 pieChartRef.current = new Chart(ctxPie, {
                     type: 'doughnut',
                     data: {
                         labels: ['Total Modal', 'Total Keuntungan'],
-                        datasets: [{
-                            data: [results.totalInvested, Math.max(0, results.totalInterest)],
-                            backgroundColor: ['#10b981', '#3b82f6'],
-                            borderWidth: 0
-                        }]
+                        datasets: [{ data: [results.totalInvested, Math.max(0, results.totalInterest)], backgroundColor: ['#10b981', '#3b82f6'], borderWidth: 0 }]
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { position: 'bottom', labels: { color: textColor } },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        let val = formatCurrency(context.parsed, currency);
-                                        let total = context.dataset.data.reduce((a,b)=>a+b,0);
-                                        let perc = ((context.parsed/total)*100).toFixed(1)+'%';
-                                        return `${context.label}: ${val} (${perc})`;
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: textColor } }, tooltip: { callbacks: { label: function(c) { let v = formatCurrency(c.parsed, currency); let t = c.dataset.data.reduce((a,b)=>a+b,0); return `${c.label}: ${v} (${((c.parsed/t)*100).toFixed(1)}%)`; } } } } }
                 });
 
             }, [results, currency]);
@@ -476,9 +399,7 @@
                             </h2>
                             
                             <SelectGroup 
-                                label="Target Pencarian"
-                                value={solveFor}
-                                onChange={setSolveFor}
+                                label="Target Pencarian" value={solveFor} onChange={setSolveFor}
                                 options={[
                                     { value: 'FV', label: 'Cari Hasil Akhir (Target Kekayaan)' },
                                     { value: 'PMT', label: 'Cari Setoran Berkala yang Dibutuhkan' },
@@ -487,50 +408,41 @@
                                 ]}
                             />
 
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Kategori Simulasi</label>
+                                <div className="flex gap-2 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg">
+                                    <button onClick={() => setContributionCategory('fixed')} className={`flex-1 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all ${contributionCategory === 'fixed' ? 'bg-white dark:bg-gray-800 shadow text-primary-600' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}>1. Setoran Tetap</button>
+                                    <button onClick={() => setContributionCategory('dynamic')} className={`flex-1 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all ${contributionCategory === 'dynamic' ? 'bg-white dark:bg-gray-800 shadow text-primary-600' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}>2. Setoran Bertahap</button>
+                                </div>
+                            </div>
+
                             <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                                 <InputField label="Modal Awal" value={principal} onChange={setPrincipal} prefix={currency} />
                                 {solveFor !== 'FV' && <InputField label="Target Hasil Akhir (Future Value)" value={targetFV} onChange={setTargetFV} prefix={currency} />}
-                                {solveFor !== 'PMT' && <InputField label="Setoran Berkala" value={contribution} onChange={setContribution} prefix={currency} />}
+                                
+                                {solveFor !== 'PMT' && <InputField label={contributionCategory === 'dynamic' ? "Setoran Berkala Awal" : "Setoran Berkala"} value={contribution} onChange={setContribution} prefix={currency} />}
+                                
+                                {contributionCategory === 'dynamic' && (
+                                    <div className="p-4 bg-primary-50 dark:bg-primary-900/10 border border-primary-100 dark:border-primary-900/50 rounded-lg space-y-4 mb-4">
+                                        <p className="text-xs font-semibold text-primary-700 dark:text-primary-400 uppercase tracking-wider">Kategori 2: Parameter Dinamis</p>
+                                        <InputField label="Ubah Nominal Setoran (Y)" value={dynamicStepAmount} onChange={setDynamicStepAmount} prefix={currency} step={10000} />
+                                        <InputField label="Tiap (X) Kali Setoran" value={dynamicStepInterval} onChange={setDynamicStepInterval} type="number" min="1" step="1" />
+                                        <p className="text-xs text-primary-600/80 dark:text-primary-400/80 leading-relaxed">
+                                            Setoran akan {dynamicStepAmount >= 0 ? 'bertambah' : 'berkurang'} sebesar {formatCurrency(Math.abs(dynamicStepAmount), currency)} setiap kelipatan {dynamicStepInterval} kali penyetoran.
+                                        </p>
+                                    </div>
+                                )}
+
                                 {solveFor !== 'RATE' && <InputField label="Tingkat Pertumbuhan (Return per Tahun)" value={rate} onChange={setRate} suffix="%" />}
                                 {solveFor !== 'NPER' && <InputField label="Durasi Investasi" value={years} onChange={setYears} suffix="Tahun" />}
 
                                 <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
                                     <p className="text-xs font-semibold text-gray-500 uppercase mb-3">Pengaturan Lanjutan</p>
                                     <div className="grid grid-cols-2 gap-2">
-                                        <SelectGroup 
-                                            label="Frekuensi Setoran"
-                                            value={freqContribute}
-                                            onChange={setFreqContribute}
-                                            options={[
-                                                {value: 365, label: 'Harian'},
-                                                {value: 52, label: 'Mingguan'},
-                                                {value: 12, label: 'Bulanan'},
-                                                {value: 4, label: 'Kuartalan'},
-                                                {value: 2, label: 'Semesteran'},
-                                                {value: 1, label: 'Tahunan'}
-                                            ]}
-                                        />
-                                        <SelectGroup 
-                                            label="Frekuensi Compound"
-                                            value={freqCompound}
-                                            onChange={setFreqCompound}
-                                            options={[
-                                                {value: 365, label: 'Harian'},
-                                                {value: 12, label: 'Bulanan'},
-                                                {value: 4, label: 'Kuartalan'},
-                                                {value: 1, label: 'Tahunan'}
-                                            ]}
-                                        />
+                                        <SelectGroup label="Frekuensi Setoran" value={freqContribute} onChange={setFreqContribute} options={[{value: 365, label: 'Harian'}, {value: 52, label: 'Mingguan'}, {value: 12, label: 'Bulanan'}, {value: 4, label: 'Kuartalan'}, {value: 2, label: 'Semesteran'}, {value: 1, label: 'Tahunan'}]} />
+                                        <SelectGroup label="Frekuensi Compound" value={freqCompound} onChange={setFreqCompound} options={[{value: 365, label: 'Harian'}, {value: 12, label: 'Bulanan'}, {value: 4, label: 'Kuartalan'}, {value: 1, label: 'Tahunan'}]} />
                                     </div>
-                                    <SelectGroup 
-                                        label="Waktu Setoran"
-                                        value={timing}
-                                        onChange={(val) => setTiming(parseInt(val))}
-                                        options={[
-                                            {value: 0, label: 'Akhir Periode'},
-                                            {value: 1, label: 'Awal Periode'}
-                                        ]}
-                                    />
+                                    <SelectGroup label="Waktu Setoran" value={timing} onChange={(val) => setTiming(parseInt(val))} options={[{value: 0, label: 'Akhir Periode'}, {value: 1, label: 'Awal Periode'}]} />
                                     <InputField label="Estimasi Inflasi Tahunan" value={inflation} onChange={setInflation} suffix="%" />
                                 </div>
                             </div>
@@ -538,26 +450,10 @@
 
                         <div className="lg:col-span-2 space-y-6">
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                <StatBox 
-                                    title={solveFor === 'FV' ? "Estimasi Hasil Akhir" : "Target Hasil Akhir"} 
-                                    value={formatCurrency(results ? results.futureValue : 0, currency)} 
-                                    highlight={solveFor === 'FV'} color="blue"
-                                />
-                                <StatBox 
-                                    title={solveFor === 'PMT' ? "Setoran Diperlukan" : "Total Setoran"} 
-                                    value={solveFor === 'PMT' ? formatCurrency(results ? results.calculatedPMT : 0, currency) + " /per" : formatCurrency(results ? results.totalInvested : 0, currency)} 
-                                    highlight={solveFor === 'PMT'} color="green"
-                                />
-                                <StatBox 
-                                    title={solveFor === 'RATE' ? "Return Diperlukan" : "Total Keuntungan"} 
-                                    value={solveFor === 'RATE' ? (results ? results.calculatedRate : 0).toFixed(2) + "% /thn" : formatCurrency(results ? results.totalInterest : 0, currency)} 
-                                    highlight={solveFor === 'RATE'} color="purple"
-                                />
-                                <StatBox 
-                                    title={solveFor === 'NPER' ? "Waktu Dibutuhkan" : "Nilai Riil (Setelah Inflasi)"} 
-                                    value={solveFor === 'NPER' ? (results ? results.calculatedYears : 0).toFixed(1) + " Tahun" : formatCurrency(results ? results.realValue : 0, currency)} 
-                                    highlight={solveFor === 'NPER'} color="orange"
-                                />
+                                <StatBox title={solveFor === 'FV' ? "Estimasi Hasil Akhir" : "Target Hasil Akhir"} value={formatCurrency(results ? results.futureValue : 0, currency)} highlight={solveFor === 'FV'} color="blue" />
+                                <StatBox title={solveFor === 'PMT' ? "Setoran Awal Diperlukan" : "Total Setoran"} value={solveFor === 'PMT' ? formatCurrency(results ? results.calculatedPMT : 0, currency) + " /per" : formatCurrency(results ? results.totalInvested : 0, currency)} highlight={solveFor === 'PMT'} color="green" />
+                                <StatBox title={solveFor === 'RATE' ? "Return Diperlukan" : "Total Keuntungan"} value={solveFor === 'RATE' ? (results ? results.calculatedRate : 0).toFixed(2) + "% /thn" : formatCurrency(results ? results.totalInterest : 0, currency)} highlight={solveFor === 'RATE'} color="purple" />
+                                <StatBox title={solveFor === 'NPER' ? "Waktu Dibutuhkan" : "Nilai Riil (Setelah Inflasi)"} value={solveFor === 'NPER' ? (results ? results.calculatedYears : 0).toFixed(1) + " Tahun" : formatCurrency(results ? results.realValue : 0, currency)} highlight={solveFor === 'NPER'} color="orange" />
                             </div>
 
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -583,12 +479,12 @@
                             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                 <thead className="bg-gray-50 dark:bg-gray-800 sticky top-0">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Periode</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tahun</th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Setoran</th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Bunga Majemuk</th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Disetor</th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Saldo Akhir</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Periode</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tahun</th>
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Setoran</th>
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Bunga Majemuk</th>
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total Disetor</th>
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Saldo Akhir</th>
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
@@ -605,9 +501,7 @@
                                 </tbody>
                             </table>
                             {schedule.length > 100 && (
-                                <div className="p-4 text-center text-sm text-gray-500">
-                                    Menampilkan 100 periode pertama dari total {schedule.length} periode.
-                                </div>
+                                <div className="p-4 text-center text-sm text-gray-500">Menampilkan 100 periode pertama dari total {schedule.length} periode.</div>
                             )}
                         </div>
                     </Card>
@@ -616,15 +510,12 @@
         };
 
         // ==========================================
-        // 4. FIRE CALCULATOR
+        // 4. FIRE CALCULATOR (TETAP SAMA)
         // ==========================================
         const FIRECalculator = ({ currency }) => {
-            const [currentAge, setCurrentAge] = useState(0);
-            const [currentSavings, setCurrentSavings] = useState(0);
-            const [monthlyExpense, setMonthlyExpense] = useState(0);
-            const [monthlySavings, setMonthlySavings] = useState(0);
-            const [annualReturn, setAnnualReturn] = useState(0);
-            const [safeWithdrawalRate, setSafeWithdrawalRate] = useState(4);
+            const [currentAge, setCurrentAge] = useState(0); const [currentSavings, setCurrentSavings] = useState(0);
+            const [monthlyExpense, setMonthlyExpense] = useState(0); const [monthlySavings, setMonthlySavings] = useState(0);
+            const [annualReturn, setAnnualReturn] = useState(0); const [safeWithdrawalRate, setSafeWithdrawalRate] = useState(4);
             const [inflation, setInflation] = useState(0);
 
             const targetFIRE = monthlyExpense > 0 ? (monthlyExpense * 12) / (safeWithdrawalRate / 100) : 0;
@@ -632,57 +523,34 @@
             
             let yearsToFIRE = 0;
             if (netReturn > 0 && monthlySavings > 0) {
-                const r = netReturn / 12; 
-                const P = currentSavings;
-                const PMT = monthlySavings;
-                const FV = targetFIRE;
-                const num = (FV * r + PMT);
-                const den = (P * r + PMT);
-                if (den > 0 && num > 0) {
-                    const months = Math.log(num / den) / Math.log(1 + r);
-                    yearsToFIRE = months / 12;
-                }
+                const r = netReturn / 12, P = currentSavings, PMT = monthlySavings, FV = targetFIRE;
+                const num = (FV * r + PMT), den = (P * r + PMT);
+                if (den > 0 && num > 0) yearsToFIRE = (Math.log(num / den) / Math.log(1 + r)) / 12;
             } else if (netReturn === 0 && monthlySavings > 0) {
                 yearsToFIRE = Math.max(0, (targetFIRE - currentSavings) / (monthlySavings * 12));
             }
-
             const fireAge = currentAge > 0 ? currentAge + yearsToFIRE : 0;
 
             return (
                 <Card>
                     <div className="flex items-center gap-3 mb-6">
                         <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg text-orange-600"><Icons.TrendingUp /></div>
-                        <div>
-                            <h2 className="text-xl font-bold">Kalkulator FIRE</h2>
-                            <p className="text-sm text-gray-500">Kapan Anda bisa berhenti bekerja?</p>
-                        </div>
+                        <div><h2 className="text-xl font-bold">Kalkulator FIRE</h2><p className="text-sm text-gray-500">Kapan Anda bisa berhenti bekerja?</p></div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <InputField label="Usia Saat Ini" value={currentAge} onChange={setCurrentAge} suffix="Thn" />
-                                <InputField label="Tabungan Saat Ini" value={currentSavings} onChange={setCurrentSavings} prefix={currency} />
-                            </div>
+                            <div className="grid grid-cols-2 gap-4"><InputField label="Usia Saat Ini" value={currentAge} onChange={setCurrentAge} suffix="Thn" /><InputField label="Tabungan Saat Ini" value={currentSavings} onChange={setCurrentSavings} prefix={currency} /></div>
                             <InputField label="Pengeluaran Bulanan" value={monthlyExpense} onChange={setMonthlyExpense} prefix={currency} />
                             <InputField label="Investasi Bulanan" value={monthlySavings} onChange={setMonthlySavings} prefix={currency} />
-                            <div className="grid grid-cols-2 gap-4">
-                                <InputField label="Asumsi Return" value={annualReturn} onChange={setAnnualReturn} suffix="%" />
-                                <InputField label="Asumsi Inflasi" value={inflation} onChange={setInflation} suffix="%" />
-                            </div>
+                            <div className="grid grid-cols-2 gap-4"><InputField label="Asumsi Return" value={annualReturn} onChange={setAnnualReturn} suffix="%" /><InputField label="Asumsi Inflasi" value={inflation} onChange={setInflation} suffix="%" /></div>
                             <InputField label="Safe Withdrawal Rate (SWR)" value={safeWithdrawalRate} onChange={setSafeWithdrawalRate} suffix="%" />
                         </div>
                         <div className="flex flex-col justify-center items-center p-8 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700">
                             <h3 className="text-lg text-gray-500 font-medium mb-2">Target Dana FIRE</h3>
                             <div className="text-4xl font-black text-orange-500 mb-8">{formatCurrency(targetFIRE, currency)}</div>
                             <div className="w-full space-y-4">
-                                <div className="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-2">
-                                    <span className="text-gray-500">Estimasi Waktu</span>
-                                    <span className="font-bold text-xl">{yearsToFIRE > 0 ? yearsToFIRE.toFixed(1) + ' Tahun' : '-'}</span>
-                                </div>
-                                <div className="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-2">
-                                    <span className="text-gray-500">Usia Pensiun (FIRE)</span>
-                                    <span className="font-bold text-2xl text-blue-500">{fireAge > 0 ? Math.ceil(fireAge) + ' Tahun' : '-'}</span>
-                                </div>
+                                <div className="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-2"><span className="text-gray-500">Estimasi Waktu</span><span className="font-bold text-xl">{yearsToFIRE > 0 ? yearsToFIRE.toFixed(1) + ' Tahun' : '-'}</span></div>
+                                <div className="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-2"><span className="text-gray-500">Usia Pensiun (FIRE)</span><span className="font-bold text-2xl text-blue-500">{fireAge > 0 ? Math.ceil(fireAge) + ' Tahun' : '-'}</span></div>
                             </div>
                         </div>
                     </div>
@@ -691,43 +559,25 @@
         }
 
         // ==========================================
-        // 5. PRO METRICS (NPV, IRR)
+        // 5. PRO METRICS (TETAP SAMA)
         // ==========================================
         const ProMetrics = ({ currency }) => {
-            const [discountRate, setDiscountRate] = useState(0);
-            const [initialInvestment, setInitialInvestment] = useState(0);
-            const [cashflows, setCashflows] = useState([0, 0, 0]); 
-
-            const updateCF = (idx, val) => {
-                const newCF = [...cashflows];
-                newCF[idx] = val;
-                setCashflows(newCF);
-            };
+            const [discountRate, setDiscountRate] = useState(0); const [initialInvestment, setInitialInvestment] = useState(0); const [cashflows, setCashflows] = useState([0, 0, 0]); 
+            const updateCF = (idx, val) => { const newCF = [...cashflows]; newCF[idx] = val; setCashflows(newCF); };
             const addYear = () => setCashflows([...cashflows, 0]);
             const removeYear = () => { if(cashflows.length > 1) setCashflows(cashflows.slice(0, -1)); }
 
             const calculateNPV = () => {
-                let npv = -initialInvestment;
-                const r = discountRate / 100;
-                for (let i = 0; i < cashflows.length; i++) {
-                    npv += cashflows[i] / Math.pow(1 + r, i + 1);
-                }
+                let npv = -initialInvestment, r = discountRate / 100;
+                for (let i = 0; i < cashflows.length; i++) npv += cashflows[i] / Math.pow(1 + r, i + 1);
                 return npv;
             };
 
             const calculateIRR = () => {
                 let rate = 0.1; 
-                const npvForRate = (r) => {
-                    let val = -initialInvestment;
-                    for (let i = 0; i < cashflows.length; i++) {
-                        val += cashflows[i] / Math.pow(1 + r, i + 1);
-                    }
-                    return val;
-                };
+                const npvForRate = (r) => { let val = -initialInvestment; for (let i = 0; i < cashflows.length; i++) val += cashflows[i] / Math.pow(1 + r, i + 1); return val; };
                 for (let i = 0; i < 1000; i++) {
-                    let npv = npvForRate(rate);
-                    let npv_plus = npvForRate(rate + 0.0001);
-                    let derivative = (npv_plus - npv) / 0.0001;
+                    let npv = npvForRate(rate), npv_plus = npvForRate(rate + 0.0001), derivative = (npv_plus - npv) / 0.0001;
                     if (Math.abs(derivative) < 0.000001) break;
                     let newRate = rate - (npv / derivative);
                     if (Math.abs(newRate - rate) < 0.00001) return newRate * 100;
@@ -736,17 +586,13 @@
                 return rate * 100;
             };
 
-            const npv = initialInvestment > 0 ? calculateNPV() : 0;
-            const irr = initialInvestment > 0 ? calculateIRR() : 0;
+            const npv = initialInvestment > 0 ? calculateNPV() : 0, irr = initialInvestment > 0 ? calculateIRR() : 0;
 
             return (
                 <Card>
                     <div className="flex items-center gap-3 mb-6">
                         <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg text-purple-600"><Icons.Activity /></div>
-                        <div>
-                            <h2 className="text-xl font-bold">Analisis Investasi Profesional</h2>
-                            <p className="text-sm text-gray-500">Net Present Value (NPV) & Internal Rate of Return (IRR)</p>
-                        </div>
+                        <div><h2 className="text-xl font-bold">Analisis Investasi Profesional</h2><p className="text-sm text-gray-500">Net Present Value (NPV) & Internal Rate of Return (IRR)</p></div>
                     </div>
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         <div className="lg:col-span-1 space-y-4">
@@ -755,25 +601,17 @@
                             <div className="mt-6">
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Proyeksi Arus Kas</label>
                                 {cashflows.map((cf, idx) => (
-                                    <div key={idx} className="flex items-center gap-2 mb-2">
-                                        <span className="text-sm text-gray-500 w-16">Thn {idx + 1}</span>
-                                        <div className="flex-1"><InputField label="" value={cf} onChange={(v) => updateCF(idx, v)} prefix={currency} /></div>
-                                    </div>
+                                    <div key={idx} className="flex items-center gap-2 mb-2"><span className="text-sm text-gray-500 w-16">Thn {idx + 1}</span><div className="flex-1"><InputField label="" value={cf} onChange={(v) => updateCF(idx, v)} prefix={currency} /></div></div>
                                 ))}
-                                <div className="flex gap-2">
-                                    <button onClick={addYear} className="flex-1 px-3 py-2 bg-gray-100 dark:bg-gray-700 text-sm rounded">+ Tambah</button>
-                                    <button onClick={removeYear} className="px-3 py-2 bg-red-50 text-red-600 text-sm rounded">-</button>
-                                </div>
+                                <div className="flex gap-2"><button onClick={addYear} className="flex-1 px-3 py-2 bg-gray-100 dark:bg-gray-700 text-sm rounded">+ Tambah</button><button onClick={removeYear} className="px-3 py-2 bg-red-50 text-red-600 text-sm rounded">-</button></div>
                             </div>
                         </div>
                         <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 h-max">
                             <div className={`p-6 rounded-xl border ${npv > 0 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
-                                <h3 className="text-gray-500 text-sm font-medium mb-1">Net Present Value (NPV)</h3>
-                                <div className={`text-3xl font-bold ${npv > 0 ? 'text-green-600' : 'text-red-600'}`}>{formatCurrency(npv, currency)}</div>
+                                <h3 className="text-gray-500 text-sm font-medium mb-1">Net Present Value (NPV)</h3><div className={`text-3xl font-bold ${npv > 0 ? 'text-green-600' : 'text-red-600'}`}>{formatCurrency(npv, currency)}</div>
                             </div>
                             <div className="p-6 rounded-xl border bg-purple-50 border-purple-200">
-                                <h3 className="text-gray-500 text-sm font-medium mb-1">Internal Rate of Return (IRR)</h3>
-                                <div className="text-3xl font-bold text-purple-600">{isNaN(irr) || !isFinite(irr) ? '0.00' : irr.toFixed(2)}%</div>
+                                <h3 className="text-gray-500 text-sm font-medium mb-1">Internal Rate of Return (IRR)</h3><div className="text-3xl font-bold text-purple-600">{isNaN(irr) || !isFinite(irr) ? '0.00' : irr.toFixed(2)}%</div>
                             </div>
                         </div>
                     </div>
@@ -785,7 +623,7 @@
         // 6. MAIN APP
         // ==========================================
         const App = () => {
-            const [activeTab, setActiveTab] = useState('omni'); 
+            const [activeTab, setActiveTab] = useState('kr'); 
             const [currency, setCurrency] = useState('IDR');
             const [exchangeRate, setExchangeRate] = useState(1);
             const [isDarkMode, setIsDarkMode] = useState(false);
@@ -809,7 +647,7 @@
                             <div className="flex justify-between items-center h-16">
                                 <div className="flex items-center gap-2">
                                     <div className="bg-primary-600 text-white p-2 rounded-lg"><Icons.Target /></div>
-                                    <span className="font-black text-xl tracking-tight text-gray-900 dark:text-white">OmniWealth<span className="text-primary-600">Pro</span></span>
+                                    <span className="font-black text-xl tracking-tight text-gray-900 dark:text-white">KrWealth<span className="text-primary-600">Aces</span></span>
                                 </div>
                                 <div className="flex items-center gap-4">
                                     <div className="text-xs font-medium text-gray-500 hidden md:block px-3 py-1 bg-gray-100 rounded-full">
@@ -826,12 +664,12 @@
 
                     <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
                         <div className="flex space-x-2 mb-8 overflow-x-auto pb-2 no-print">
-                            <button onClick={() => setActiveTab('omni')} className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap flex items-center gap-2 ${activeTab === 'omni' ? 'bg-primary-100 text-primary-700' : 'text-gray-600 hover:bg-gray-100'}`}><Icons.Calculator /> Kalkulator Pusat</button>
+                            <button onClick={() => setActiveTab('kr')} className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap flex items-center gap-2 ${activeTab === 'kr' ? 'bg-primary-100 text-primary-700' : 'text-gray-600 hover:bg-gray-100'}`}><Icons.Calculator /> Kalkulator Pusat</button>
                             <button onClick={() => setActiveTab('fire')} className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap flex items-center gap-2 ${activeTab === 'fire' ? 'bg-orange-100 text-orange-700' : 'text-gray-600 hover:bg-gray-100'}`}><Icons.TrendingUp /> Simulasi FIRE</button>
                             <button onClick={() => setActiveTab('pro')} className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap flex items-center gap-2 ${activeTab === 'pro' ? 'bg-purple-100 text-purple-700' : 'text-gray-600 hover:bg-gray-100'}`}><Icons.Activity /> Metrik Profesional</button>
                         </div>
                         <div className="transition-all">
-                            {activeTab === 'omni' && <OmniCalculator currency={currency} />}
+                            {activeTab === 'kr' && <KrCalculator currency={currency} />}
                             {activeTab === 'fire' && <FIRECalculator currency={currency} />}
                             {activeTab === 'pro' && <ProMetrics currency={currency} />}
                         </div>
